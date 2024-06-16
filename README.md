@@ -192,3 +192,14 @@ the Host, and not Maps. The system will not marshal the object for you due to pe
 A Array is a lua table that exists in the lua VM, and only contains numeric keys (1 based on the lua side,
 0 based on the Wren side). The provided Wren interface mirrors most of Wren List functionality. You must pass
 Arrays to the Host, and not Lists. The system will not marshal the object for you due to performance issues.
+
+# roadmap of features
+Once this testing version is tested and debugged, I'll move on to adding features in coming releases. This is
+the roadmap as it currently stands, subject to change:
+* 0.1.0 Tenma - testing and debug of the based system and Host, Array, Table Wren classes.
+* 0.2.0 Michiru - exposed system for lua to "get" Wren classes, Buffer Wren class for a shared binary memory buffer.
+* 0.3.0 Uruka - fully functional threading and thread safety.
+* 0.4.0 Iori - fully implemented support for loading Wren binary modules.
+* 0.5.0 Ashella - ???
+* 0.6.0 Nasa - ???
+* 0.7.0 Pippa - (final development version) ???
