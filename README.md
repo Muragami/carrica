@@ -13,12 +13,14 @@ on Windows, but I will be testing and making builds on at least Debian 12 and Ma
 # the basics
 Once you have a compiled module, you simply need to load it into the lua state with the normal use of require. The
 loaded modules exposes the following functions:
-
 ```lua
      carrica.newVM()
      carrica.newVM(name)
 ```
-
-This creates a new Wren VM with a given name or an automatically generated name equal to it's id number in the
-global internal table of all VMs.
-
+This creates a new Wren VM with a given name (or an automatically generated name equal to it's id number in the
+global internal table of all VMs, such that the first created VM is named "0").
+```lua
+     carrica.version()
+```
+This returns the version string for the built module, in the format "X.X.X <codename>" currently returning
+"0.1.0 Tenma" for the initial testing version.
