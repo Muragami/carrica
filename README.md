@@ -10,7 +10,7 @@ When you download the repo you have the needed C source and a simple Makefile to
 Windows, Linux, and Mac OS platforms and adjusts the build as needed. It is primarily developed under MSYS2 (ucrt64)
 on Windows, but I will be testing and making builds on at least Debian 12 and Mac OS.
 
-# lua basics - the module itself
+# lua - the module itself
 Once you have a compiled module, you simply need to load it into the lua state with the normal use of require. The
 loaded modules exposes the following functions:
 ```lua
@@ -39,7 +39,7 @@ calls C printf() internally for all output.
 ```
 Installs a shared Wren module for all VMs with the given name and Wren code.
 
-# lua basics - the VM
+# lua - the VM
 A VM returned from carrica.newVM() has quite a few functions which allow you to interact with the contained
 Wren VM inside.
 ```lua
@@ -80,7 +80,8 @@ passed in parameter 2.
      vm.freeMethod(moduleName, className, methodSig)
 ```
 Locate the 'className.methodSig' method in module 'moduleName' - methodSig is a full Wren signature. This
-returns a function that calls that method when it is called in lua.
+returns a function that calls that method when it is called in lua. Calling .freeMethod releases the internal
+mapping, and calling func() after that will fail in a spectacular manner.
 ```lua
      vm.hasVariable(moduleName, varName)
      vm.hasModule(moduleName)
@@ -102,3 +103,70 @@ Array being a Wren List and Table being a Wren Map 'alike', but the data is pure
 Both Array and Table types have the following functions in lua. .ref() returns the underlying table for the
 shared object. .hold() increases the ref count inside to make sure it is not garbage collected until wanted,
 and .release() decreases the ref count inside so it can be garbage collected.
+
+# Wren - the carrica module
+When you provide Wren code to the carrica VM, it has access to the following:
+```wren
+// this is a lua/host side table
+foreign class Table {
+	construct new() { }
+
+	static fromMap(map) {
+		var ret = Table.new()
+		for (entry in map) {
+			ret[entry.key] = entry.value
+		}
+		return ret
+	}
+
+	foreign [key]
+	foreign [key]=(value)
+	foreign clear()
+	foreign containsKey(key)
+	foreign count
+	foreign keys
+	foreign values
+	foreign hold()
+	foreign release()
+}
+
+// this is a lua/host side array
+foreign class Array {
+	construct new() { }
+	foreign static filled(size, element)
+	foreign static fromList(list)
+
+	foreign [idx]
+	foreign [idx]=(value)
+	foreign add(item)
+	foreign addAll(other)
+	foreign clear()
+	foreign count
+	foreign indexOf(value)
+	foreign insert(index, item)
+	foreign remove(value)
+	foreign removeAt(index)
+	foreign sort()
+	foreign swap(a, b)
+	foreign +(other)
+	foreign *(count)
+	foreign hold()
+	foreign release()
+}
+
+// this allows you to make calls on the host via 'handlers' installed
+class Host {
+	// get a reference to a handler from it's name
+	foreign static ref(name)
+	// make a call via a handler reference
+	foreign static call(ref)
+	foreign static call(ref, a)
+	foreign static call(ref, a, b)
+	foreign static call(ref, a, b, c)
+	foreign static call(ref, a, b, c, d)
+	foreign static call(ref, a, b, c, d, e)
+	foreign static call(ref, a, b, c, d, e, f)
+	foreign static call(ref, a, b, c, d, e, f, g)
+	foreign static call(ref, a, b, c, d, e, f, g, h)
+}
+```
