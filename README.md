@@ -105,7 +105,7 @@ shared object. .hold() increases the ref count inside to make sure it is not gar
 and .release() decreases the ref count inside so it can be garbage collected.
 
 # Wren - the carrica module
-When you provide Wren code to the carrica VM, it has access to the following:
+When you provide Wren code to the carrica VM, it has access to the following module name "carrica":
 ```wren
 // this is a lua/host side table
 foreign class Table {
@@ -146,10 +146,10 @@ foreign class Array {
 	foreign insert(index, item)
 	foreign remove(value)
 	foreign removeAt(index)
-	foreign sort()
+	foreign sort()		// Not Yet Implemented
 	foreign swap(a, b)
 	foreign +(other)
-	foreign *(count)
+	foreign *(count)	// Not Yet Implemented
 	foreign hold()
 	foreign release()
 }
@@ -170,3 +170,25 @@ class Host {
 	foreign static call(ref, a, b, c, d, e, f, g, h)
 }
 ```
+This means you can do something like the following from Wren (this is the simple.wren file from under /tests):
+```wren
+import "carrica" for Host
+
+var printRef = Host.ref("write")
+
+Host.call(printRef, "\nHello world from carrica!")
+```
+The Host class is a static foreign object that allows you to call back to lua from Wren, though because of
+differences in VM design it is a bit ugly. First you get a reference to a handler (number which is -1 if
+invalid) from Host.ref("funcName"). Then you can make any calls to that handler with Host.call(ref, ...),
+and the call system accepts 0 to 8 variables to pass.
+
+## Tables
+A Table is a lua table that exists in the lua VM, but with a foreign class that allows you to access it
+from Wren. The provided Wren interface mirrors most of Wren Map functionality. You must pass Tables to
+the Host, and not Maps. The system will not marshal the object for you due to performance issues.
+
+## Arrays
+A Array is a lua table that exists in the lua VM, and only contains numeric keys (1 based on the lua side,
+0 based on the Wren side). The provided Wren interface mirrors most of Wren List functionality. You must pass
+Arrays to the Host, and not Lists. The system will not marshal the object for you due to performance issues.
