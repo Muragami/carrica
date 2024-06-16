@@ -196,7 +196,7 @@ Arrays to the Host, and not Lists. The system will not marshal the object for yo
 # roadmap of features
 Once this testing version is tested and debugged, I'll move on to adding features in coming releases. This is
 the roadmap as it currently stands, subject to change:
-* 0.1.0 Tenma - testing and debug of the based system and Host, Array, Table Wren classes.
+* 0.1.0 Tenma - testing and debug of the base system and Host, Array, Table Wren classes.
 * 0.2.0 Michiru - exposed system for lua to "get" Wren classes, Buffer Wren class for a shared binary memory buffer.
 * 0.3.0 Uruka - fully functional threading and thread safety.
 * 0.4.0 Iori - fully implemented support for loading Wren binary modules.
