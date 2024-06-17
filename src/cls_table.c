@@ -301,14 +301,12 @@ void tvmIterate(WrenVM *vm) {
 	if (wrenGetSlotType(vm, 1) == WREN_TYPE_NULL) {
 		lua_pushnil(cvm->L);
 		if (lua_next(cvm->L, -2) != 0) {
-			printf("-");
 			wrenSetSlotBool(vm, 0, true);
 			// store this key for the next call
 			lua_pushlightuserdata(cvm->L, reref);
 			lua_pushvalue(cvm->L, -3);
 			lua_settable(cvm->L, LUA_REGISTRYINDEX);
 		} else {
-			printf("?");
 			wrenSetSlotBool(vm, 0, false);
 			lua_pop(cvm->L, 2);
 			return;
@@ -318,14 +316,12 @@ void tvmIterate(WrenVM *vm) {
 		lua_pushlightuserdata(cvm->L, reref);
 		lua_gettable(cvm->L, LUA_REGISTRYINDEX);
 		if (lua_next(cvm->L, -2) != 0) {
-			printf("$");
 			wrenSetSlotBool(vm, 0, true);
 			// store this key for the next call
 			lua_pushlightuserdata(cvm->L, reref);
 			lua_pushvalue(cvm->L, -3);
 			lua_settable(cvm->L, LUA_REGISTRYINDEX);
 		} else {
-			printf("@");
 			wrenSetSlotBool(vm, 0, false);
 			lua_pop(cvm->L, 2);
 			return;
@@ -345,13 +341,11 @@ void tvmIteratorValue(WrenVM *vm) {
 	lua_pushvalue(cvm->L, -1);
 	// pull the value from our table
 	lua_gettable(cvm->L, -3);
-	printf("!");
 	// key is at -2, and value is at -1 with the table at -3
 	wrenEnsureSlots(vm, 2);
 	if (cvm->handle.TableEntry == NULL) cvm->handle.TableEntry = lcvmGetClassHandle(cvm, "carrica", "TableEntry");
 	wrenSetSlotHandle(vm, 1, cvm->handle.TableEntry);
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
-	printf("!");
 	ref->type = VM_WREN_SHARE_TABLE_ENTRY;
 	ref->pref = NULL;
 	ref->vm = cvm;
@@ -363,7 +357,6 @@ void tvmIteratorValue(WrenVM *vm) {
 	lua_pushvalue(cvm->L, -2);
 	lua_settable(cvm->L, LUA_REGISTRYINDEX);
 	lua_pop(cvm->L, 2);
-	printf("!");
 }
 
 // create and return a new Table
