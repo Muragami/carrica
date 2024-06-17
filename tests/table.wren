@@ -37,3 +37,13 @@ io.write("They are:")
 for (k in featureTable.keys) {
 	io.write("\t" + k)
 }
+
+if (featureTable.containsKey("simple"))	{
+	io.write("\ncarrica is simple!")
+} else {
+	io.write("\ncarrica is complicated!")
+}
+
+featureTable.clear()
+
+io.write("\ncleared featureTable contains " + featureTable.count.toString + " keys")
