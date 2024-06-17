@@ -183,8 +183,6 @@ void tvmFinalize(void *obj) {
 		lua_settable(ref->vm->L, LUA_REGISTRYINDEX);
 		free(ref->pref);
 	}
-	// free our pointer to the table
-	free(ref);
 }
 
 void tvmHold(WrenVM *vm) {
@@ -303,12 +301,14 @@ void tvmIterate(WrenVM *vm) {
 	if (wrenGetSlotType(vm, 1) == WREN_TYPE_NULL) {
 		lua_pushnil(cvm->L);
 		if (lua_next(cvm->L, -2) != 0) {
-			wrenSetSlotFromLua(cvm, 0, -2);
+			printf("-");
+			wrenSetSlotBool(vm, 0, true);
 			// store this key for the next call
 			lua_pushlightuserdata(cvm->L, reref);
 			lua_pushvalue(cvm->L, -3);
 			lua_settable(cvm->L, LUA_REGISTRYINDEX);
 		} else {
+			printf("?");
 			wrenSetSlotBool(vm, 0, false);
 			lua_pop(cvm->L, 2);
 			return;
@@ -318,12 +318,14 @@ void tvmIterate(WrenVM *vm) {
 		lua_pushlightuserdata(cvm->L, reref);
 		lua_gettable(cvm->L, LUA_REGISTRYINDEX);
 		if (lua_next(cvm->L, -2) != 0) {
-			wrenSetSlotFromLua(cvm, 0, -2);
+			printf("$");
+			wrenSetSlotBool(vm, 0, true);
 			// store this key for the next call
 			lua_pushlightuserdata(cvm->L, reref);
 			lua_pushvalue(cvm->L, -3);
 			lua_settable(cvm->L, LUA_REGISTRYINDEX);
 		} else {
+			printf("@");
 			wrenSetSlotBool(vm, 0, false);
 			lua_pop(cvm->L, 2);
 			return;
@@ -342,19 +344,68 @@ void tvmIteratorValue(WrenVM *vm) {
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
 	lua_pushvalue(cvm->L, -1);
 	// pull the value from our table
-	lua_gettable(cvm->L, -2);
+	lua_gettable(cvm->L, -3);
+	printf("!");
 	// key is at -2, and value is at -1 with the table at -3
-	wrenEnsureSlots(vm, 3);
-	wrenSetSlotNewMap(vm, 0);
-	wrenSetSlotString(vm, 1, "key");
-	wrenSetSlotFromLua(cvm, 2, -2);
-	wrenSetMapValue(vm, 0, 1, 2);
-	wrenSetSlotString(vm, 1, "value");
-	wrenSetSlotFromLua(cvm, 2, -1);
-	wrenSetMapValue(vm, 0, 1, 2);
-	lua_pop(cvm->L, 3);
+	wrenEnsureSlots(vm, 2);
+	if (cvm->handle.TableEntry == NULL) cvm->handle.TableEntry = lcvmGetClassHandle(cvm, "carrica", "TableEntry");
+	wrenSetSlotHandle(vm, 1, cvm->handle.TableEntry);
+	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
+	printf("!");
+	ref->type = VM_WREN_SHARE_TABLE_ENTRY;
+	ref->pref = NULL;
+	ref->vm = cvm;
+	lua_pushlightuserdata(cvm->L, &ref->pref);
+	lua_pushvalue(cvm->L, -2);
+	lua_settable(cvm->L, LUA_REGISTRYINDEX);
+	lua_pop(cvm->L, 1);
+	lua_pushlightuserdata(cvm->L, &ref->type);
+	lua_pushvalue(cvm->L, -2);
+	lua_settable(cvm->L, LUA_REGISTRYINDEX);
+	lua_pop(cvm->L, 2);
+	printf("!");
 }
 
+// create and return a new Table
+void tevmAllocate(WrenVM* vm) {
+	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 0, VM_REREF_SIZE);
+	ref->type = VM_WREN_SHARE_TABLE_ENTRY;
+	ref->pref = NULL;
+	ref->vm = wrenGetUserData(vm);
+}
+
+// remove a table
+void tevmFinalize(void *obj) {
+	vmWrenReReference* ref = obj;
+	// remove the stored lua objects
+	lua_State *L = ref->vm->L;
+	lua_pushlightuserdata(L, &ref->type);
+	lua_pushnil(L);
+	lua_settable(L, LUA_REGISTRYINDEX);
+	lua_pushlightuserdata(L, &ref->pref);
+	lua_pushnil(L);
+	lua_settable(L, LUA_REGISTRYINDEX);
+}
+
+void tevmKey(WrenVM *vm) {
+	vmWrenReReference *ref = wrenGetSlotForeign(vm, 0);
+	carricaVM *cvm = wrenGetUserData(vm);
+	lua_State *L = cvm->L;
+	lua_pushlightuserdata(L, &ref->type);
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	wrenSetSlotFromLua(cvm, 0, -1);
+	lua_pop(L, 1);
+}
+
+void tevmValue(WrenVM *vm) {
+	vmWrenReReference *ref = wrenGetSlotForeign(vm, 0);
+	carricaVM *cvm = wrenGetUserData(vm);
+	lua_State *L = cvm->L;
+	lua_pushlightuserdata(L, &ref->pref);
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	wrenSetSlotFromLua(cvm, 0, -1);
+	lua_pop(L, 1);
+}
 
 // ********************************************************************************
 // wrap it all up for Wren
@@ -377,14 +428,22 @@ const vmForeignMethodDef _t_func[] = {
 	{ false, NULL, NULL }
 };
 
+const vmForeignMethodDef _te_func[] = {
+	{ false, "key", tevmKey },
+	{ false, "value", tevmValue },
+	{ false, NULL, NULL }
+};
+
 // class methods in this module
 const vmForeignMethodTable _t_mtab[] = { 
 	{ "Table", _t_func }, 
+	{ "TableEntry", _te_func }, 
 	{ NULL, NULL } };
 
 // foreign classes in this module
 const vmForeignClassDef _t_cdef[] = { 
 	{ "Table", { tvmAllocate, tvmFinalize } },
+	{ "TableEntry", { tevmAllocate, tevmFinalize } },
 	{ NULL, { NULL, NULL } } };
 const vmForeignClassTable _t_ctab[] = { { _t_cdef } };
 

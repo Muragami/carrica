@@ -62,6 +62,7 @@ typedef struct _carricaModTable {
 typedef struct _carricaTypeHandles {
 	WrenHandle* Table;
 	WrenHandle* Array;
+	WrenHandle* TableEntry;
 } carricaTypeHandles;
 
 typedef struct _carricaLuaRefs {
@@ -124,6 +125,7 @@ typedef int (*vmDebugEmit)(const char *s, ...);
 #define VM_WREN_SHARE_ARRAY		0xF0F00001
 #define VM_WREN_SHARE_TABLE		0xF0F00002
 #define VM_WREN_SHARE_LSOBJ		0xF0F00003
+#define VM_WREN_SHARE_TABLE_ENTRY	0xF0F00004
 
 typedef struct _vmWrenReference {
 	int type;

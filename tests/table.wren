@@ -46,11 +46,11 @@ if (featureTable.containsKey("simple"))	{
 
 featureTable.clear()
 
-io.write("\ncleared featureTable contains " + featureTable.count.toString + " keys")
-
-io.write("\n")
+io.write("\ncleared featureTable contains " + featureTable.count.toString + " keys\n")
 
 featureTable.insertAll(featureMap)
+
+io.write("\ninserted featureTable contains " + featureTable.count.toString + " keys")
 
 io.write("Features (iterated by Wren):")
 for (entry in featureTable) {

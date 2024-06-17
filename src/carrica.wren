@@ -30,6 +30,13 @@ foreign class Array {
 	foreign iteratorValue(iter)
 }
 
+foreign class TableEntry {
+	construct new() { }
+
+	foreign key
+	foreign value
+}
+
 // this is a lua/host side table
 foreign class Table {
 	construct new() { }
