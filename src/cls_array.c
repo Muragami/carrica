@@ -348,8 +348,6 @@ void avmFinalize(void *obj) {
 		lua_settable(ref->vm->L, LUA_REGISTRYINDEX);
 		free(ref->pref);
 	}
-	// free our pointer to the table
-	free(ref);
 }
 
 void avmIterate(WrenVM *vm) {
