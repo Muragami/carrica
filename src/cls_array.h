@@ -1,5 +1,5 @@
 /*
-	host.h
+	cls_array.h
 
 	wren running under lua 5.1+
 	implementation of Array class

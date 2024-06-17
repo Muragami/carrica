@@ -1,5 +1,5 @@
 /*
-	host.c
+	cls_table.c
 
 	wren running under lua 5.1+
 	implementation of Table class
