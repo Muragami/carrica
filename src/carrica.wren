@@ -2,34 +2,11 @@
 	We have some linkage here to allow the wren code to interface to the host (lua in this case)
 */
 
-// this is a lua/host side table
-foreign class Table {
-	construct new() { }
-
-	static fromMap(map) {
-		var ret = Table.new()
-		for (entry in map) {
-			ret[entry.key] = entry.value
-		}
-		return ret
-	}
-
-	foreign [key]
-	foreign [key]=(value)
-	foreign clear()
-	foreign containsKey(key)
-	foreign count
-	foreign keys
-	foreign values
-	foreign hold()
-	foreign release()
-	foreign iterate(iter)
-	foreign iteratorValue(iter)
-}
 
 // this is a lua/host side array
 foreign class Array {
 	construct new() { }
+	construct copy(other) { addAll(other) }
 	foreign static filled(size, element)
 	foreign static fromList(list)
 
@@ -51,6 +28,44 @@ foreign class Array {
 	foreign release()
 	foreign iterate(iter)
 	foreign iteratorValue(iter)
+}
+
+// this is a lua/host side table
+foreign class Table {
+	construct new() { }
+
+	construct copy(other) { insertAll(other) }
+
+	static fromMap(map) {
+		var ret = Table.new()
+		for (entry in map) {
+			ret[entry.key] = entry.value
+		}
+		return ret
+	}
+
+	foreign [key]
+	foreign [key]=(value)
+	foreign clear()
+	foreign containsKey(key)
+	foreign count
+	foreign keys
+	foreign values
+	foreign array
+	foreign list
+	foreign hold()
+	foreign release()
+	foreign finsertAll(other)
+	foreign iterate(iter)
+	foreign iteratorValue(iter)
+
+	insertAll(other) {
+		if (other is Map) {
+			for (entry in other) {
+				this[entry.key] = entry.value
+			}
+		} else finsertAll(other)
+	}
 }
 
 // this allows you to make calls on the host via 'handlers' installed
