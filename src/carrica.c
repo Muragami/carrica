@@ -14,6 +14,7 @@
 
 static lua_State *mstate;
 static int mEmitRef = -1;
+static int mSortRef = -1;
 static char emitBuffer[256];
 
 // this clobbers slot 0 in wren, FWIW
@@ -127,18 +128,12 @@ int lcvmRenew(lua_State* L) {
 }
 
 const char *luaLoadFunc = 
-"return function(name)\
-	local f = io.open(name .. '.wren', 'r')\
-    if f == nil then return nil end\
-    local content = f:read('*all')\
-    f:close()\
-    return content\
-end";
+#include "luaLoadFunc.lua.txt"
+;
 
 const char *loveLoadFunc = 
-"return function(name)\
-	return love.filesystem.read(name .. '.wren')\
-end";
+#include "loveLoadFunc.lua.txt"
+;
 
 int lcvmSetLoadFunction(lua_State* L) {
 	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
@@ -458,6 +453,10 @@ void lua_newmeta(lua_State *L, const char *name, luaL_Reg* func, lua_CFunction g
 	lua_pop(L, 1);
 }
 
+const char *mergeSort =
+#include "mergeSort.lua.txt"
+;
+
 // load carrica into the lua state
 int luaopen_carrica(lua_State* L) {
 	// store the state if we need it later
@@ -472,6 +471,10 @@ int luaopen_carrica(lua_State* L) {
 	// a table for some internal data
 		lua_pushlightuserdata(L, &mEmitRef);
 		lua_newtable(L);
+	lua_settable(L, LUA_REGISTRYINDEX);
+	// a merge sort function
+	lua_pushlightuserdata(L, &mSortRef);
+	luaL_dostring(L, mergeSort);
 	lua_settable(L, LUA_REGISTRYINDEX);
 	// register our functions
 	luaL_register(L, "carrica", lfunc);
