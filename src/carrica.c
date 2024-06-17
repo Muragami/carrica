@@ -21,9 +21,10 @@ static char emitBuffer[256];
 // since Wren isn't reentrant, not an issue at the moment
 WrenHandle* lcvmGetClassHandle(carricaVM *cvm, const char* module, const char* name) {
 #ifdef CARRICA_SAFETY
-	if (!wrenHasModule(cvm->vm, "carrica") || wrenHasVariable(cvm->vm, "carrica", "Table")) 
+	if (!wrenHasModule(cvm->vm, module) || !wrenHasVariable(cvm->vm, module, name)) 
 		// something is horribly wrong...
-		luaL_error(cvm->L, "carrica -> could not find Table class in module carrica in Wren vm");
+		luaL_error(cvm->L, "carrica -> could not find '%s' class in module '%s' in Wren vm",
+								name, module);
 #endif
 	wrenGetVariable(cvm->vm, module, name, 0);
 	return wrenGetSlotHandle(cvm->vm, 0);
