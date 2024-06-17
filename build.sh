@@ -1,3 +1,3 @@
 make clean
-make wren
+make texts
 make

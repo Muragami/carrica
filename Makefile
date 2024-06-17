@@ -32,13 +32,15 @@ CXX := clang++
 #universal cfg
 SRC_DIRS := ./src
 SRCS := $(shell find $(SRC_DIRS) -name *.cpp -or -name *.c -or -name *.s)
-TXTS := $(shell find $(SRC_DIRS) -name *.wren)
+WTXTS := $(shell find $(SRC_DIRS) -name *.wren)
+LTXTS := $(shell find $(SRC_DIRS) -name *.lua)
 DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS)) -I./include
 MKDIR_P ?= mkdir -p
 
-WRTXTS := $(TXTS:%=$(SRC_DIRS)/%.txt)
+WREN_TXTS := $(WTXTS:%=$(SRC_DIRS)/%.txt)
+LUA_TXTS := $(LTXTS:%=$(SRC_DIRS)/%.txt)
 
 #windows cfg
 WBUILD_DIR := ./wobj
@@ -60,6 +62,9 @@ MLDFLAGS = ./lib/libwren.m.a -lpthread -lm -ldl
 
 # text source
 $(SRC_DIRS)/%.wren.txt: %.wren
+	f2t $<
+
+$(SRC_DIRS)/%.lua.txt: %.lua
 	f2t $<
 
 # assembly
@@ -103,7 +108,7 @@ $(SRC_DIRS)/%.wren.txt: %.wren
 
 .PHONY: clean
 
-wren: $(WRTXTS)
+texts: $(WREN_TXTS) $(LUA_TXTS)
 	
 linux: $(LOBJS)
 	$(eval LDFLAGS=$(LLDFLAGS))
