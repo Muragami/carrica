@@ -9,5 +9,6 @@
 */
 
 #include "vm.h"
+vmWrenReference* avmLuaNewArray(carricaVM *cvm);
 extern const vmForeignModule vmiArray;
 

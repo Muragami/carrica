@@ -13,10 +13,10 @@
 
 #define WERR(x) { wrenError(vm, x); return; }
 
-vmWrenReference* avmLuaNewTable(carricaVM *cvm) {
+vmWrenReference* avmLuaNewArray(carricaVM *cvm) {
 	lua_State *L = cvm->L;
 	vmWrenReference* ret = lua_newuserdata(L, VM_REF_SIZE);
-	ret->type = VM_WREN_SHARE_TABLE;
+	ret->type = VM_WREN_SHARE_ARRAY;
 	ret->refCount = 1;
 	lua_pushlightuserdata(L, ret);
 	lua_newtable(L);
@@ -75,7 +75,7 @@ void avmFilled(WrenVM *vm) {
 	wrenSetSlotHandle(vm, 1, cvm->handle.Array);
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_TABLE;
-	ref->pref = avmLuaNewTable(wrenGetUserData(vm));
+	ref->pref = avmLuaNewArray(wrenGetUserData(vm));
 	int cnt = (int)wrenGetSlotDouble(vm, 1);
 	lua_pushlightuserdata(cvm->L, ref->pref);
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
@@ -93,7 +93,7 @@ void avmFromList(WrenVM *vm) {
 	wrenSetSlotHandle(vm, 1, cvm->handle.Array);
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_TABLE;
-	ref->pref = avmLuaNewTable(wrenGetUserData(vm));
+	ref->pref = avmLuaNewArray(wrenGetUserData(vm));
 	int pos = 0;
 	wrenEnsureSlots(vm, 2);
 	if (wrenGetSlotType(vm, 1) == WREN_TYPE_LIST) {
@@ -333,8 +333,8 @@ void avmTimes(WrenVM *vm) {
 // create and return a new Table
 void avmAllocate(WrenVM* vm) {
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 0, VM_REREF_SIZE);
-	ref->type = VM_WREN_SHARE_TABLE;
-	ref->pref = avmLuaNewTable(wrenGetUserData(vm));
+	ref->type = VM_WREN_SHARE_ARRAY;
+	ref->pref = avmLuaNewArray(wrenGetUserData(vm));
 	ref->vm = wrenGetUserData(vm);
 }
 

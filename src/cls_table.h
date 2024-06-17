@@ -9,5 +9,6 @@
 */
 
 #include "vm.h"
+vmWrenReference* tvmLuaNewTable(carricaVM *cvm);
 extern const vmForeignModule vmiTable;
 

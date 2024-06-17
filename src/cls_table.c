@@ -9,6 +9,7 @@
 */
 
 #include "cls_table.h"
+#include "cls_array.h"
 #include "vm.h"
 
 #define WERR(x) { wrenError(vm, x); return; }
@@ -196,6 +197,104 @@ void tvmRelease(WrenVM *vm) {
 	if (reref->pref->refCount > 0) reref->pref->refCount--;
 }
 
+void tvmInsertAll(WrenVM *vm) {
+	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
+	vmWrenReReference *tref = NULL;
+	int end = 0;
+	carricaVM *cvm = wrenGetUserData(vm);
+	lua_pushlightuserdata(cvm->L, reref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	switch (wrenGetSlotType(vm, 1)) {
+		case WREN_TYPE_LIST:
+			// a passed in list must be [ key, value, key, value, ... ]
+			end = wrenGetListCount(vm, 1);
+			if (end % 2) {
+				wrenError(vm, "bad List passed to Table.insertAll(), unmatched key-value pair");
+			} else {
+				wrenEnsureSlots(vm, 4);
+				for (int i = 0; i < end; i = i + 2) {
+					wrenGetListElement(vm, 1, i, 2);
+					wrenGetListElement(vm, 1, i + 1, 3);
+					luaPushFromWrenSlot(cvm, 2);
+					luaPushFromWrenSlot(cvm, 3);
+					lua_settable(cvm->L, -3);
+				}
+			}
+			break;
+		case WREN_TYPE_FOREIGN:
+			tref = wrenGetSlotForeign(vm, 1);
+			if (tref->type == VM_WREN_SHARE_TABLE) {
+				lua_pushlightuserdata(cvm->L, tref->pref);
+				lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+				lua_pushnil(cvm->L);
+				while (lua_next(cvm->L, -2) != 0) {
+					lua_settable(cvm->L, -4);
+					lua_pop(cvm->L, 1);
+				}
+				lua_pop(cvm->L, 2);
+				return;
+			} else if (tref->type == VM_WREN_SHARE_ARRAY) {
+				// a passed array must be [ key, value, key, value, ... ]
+				lua_pushlightuserdata(cvm->L, tref->pref);
+				lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+				end = lua_objlen(cvm->L, -1);
+				for (int i = 1; i <= end; i = i + 2) {
+					lua_rawgeti(cvm->L, -1, i);
+					lua_rawgeti(cvm->L, -1, i + 1);
+					lua_settable(cvm->L, -4);
+				}
+				lua_pop(cvm->L, 2);
+				return;
+			} else 
+				wrenError(vm, "bad foreign class passed to Table.insertAll()");
+			break;
+		default:
+			wrenError(vm, "bad type passed to Table.insertAll()");
+	}
+	lua_pop(cvm->L, 1);
+}
+
+void tvmArray(WrenVM *vm) {
+	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
+	carricaVM *cvm = wrenGetUserData(vm);
+	lua_pushlightuserdata(cvm->L, reref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	if (cvm->handle.Array == NULL) cvm->handle.Array = lcvmGetClassHandle(cvm, "carrica", "Array");
+	wrenEnsureSlots(vm, 3);
+	wrenSetSlotHandle(vm, 1, cvm->handle.Array);
+	vmWrenReReference *aref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
+	aref->type = VM_WREN_SHARE_ARRAY;
+	aref->pref = avmLuaNewArray(cvm);
+	lua_pushlightuserdata(cvm->L, aref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	lua_pushnil(cvm->L);
+	int i = 1;
+    while (lua_next(cvm->L, -3) != 0) {
+    	lua_pushvalue(cvm->L, -2);
+    	lua_rawseti(cvm->L, -4, i++);
+    	lua_rawseti(cvm->L, -3, i++);
+    }
+    lua_pop(cvm->L, 2);
+}
+
+void tvmList(WrenVM *vm) {
+	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
+	carricaVM *cvm = wrenGetUserData(vm);
+	lua_pushlightuserdata(cvm->L, reref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	wrenEnsureSlots(vm, 2);
+	wrenSetSlotNewList(vm, 0);
+	lua_pushnil(cvm->L);
+    while (lua_next(cvm->L, -2) != 0) {
+    	wrenSetSlotFromLua(cvm, 1, -2);
+    	wrenInsertInList(vm, 0, -1, 1);
+    	wrenSetSlotFromLua(cvm, 1, -1);
+    	wrenInsertInList(vm, 0, -1, 1);
+       	lua_pop(cvm->L, 1);
+    }
+    lua_pop(cvm->L, 2);
+}
+
 void tvmIterate(WrenVM *vm) {
 	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
 	carricaVM *cvm = wrenGetUserData(vm);
@@ -203,7 +302,7 @@ void tvmIterate(WrenVM *vm) {
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
 	if (wrenGetSlotType(vm, 1) == WREN_TYPE_NULL) {
 		lua_pushnil(cvm->L);
-		if (lua_next(cvm->L, -2)) {
+		if (lua_next(cvm->L, -2) != 0) {
 			wrenSetSlotFromLua(cvm, 0, -2);
 			// store this key for the next call
 			lua_pushlightuserdata(cvm->L, reref);
@@ -218,7 +317,7 @@ void tvmIterate(WrenVM *vm) {
 		// pull the last key out of the registry
 		lua_pushlightuserdata(cvm->L, reref);
 		lua_gettable(cvm->L, LUA_REGISTRYINDEX);
-		if (lua_next(cvm->L, -2)) {
+		if (lua_next(cvm->L, -2) != 0) {
 			wrenSetSlotFromLua(cvm, 0, -2);
 			// store this key for the next call
 			lua_pushlightuserdata(cvm->L, reref);
@@ -270,6 +369,9 @@ const vmForeignMethodDef _t_func[] = {
 	{ false, "values", tvmValues },
 	{ false, "hold()", tvmHold },
 	{ false, "release()", tvmRelease },	
+	{ false, "finsertAll(_)", tvmInsertAll },
+	{ false, "array", tvmArray },
+	{ false, "list", tvmList },
 	{ false, "iterate(_)", tvmIterate },
 	{ false, "iteratorValue(_)", tvmIteratorValue },	
 	{ false, NULL, NULL }
