@@ -43,17 +43,17 @@ Installs a shared Wren module for all VMs with the given name and Wren code.
 A VM returned from carrica.newVM() has quite a few functions which allow you to interact with the contained
 Wren VM inside.
 ```lua
-     vm.release()
-     vm.isValid()
-     vm.renew()
+     vm:release()
+     vm:isValid()
+     vm:renew()
 ```
 These functions all have to do with the core functionality of the VM contained. If you call .release() the
 internal VM is released and the container is set to an invalid state - it is an error to call most functions
-on such a VM. However you can call .isValid() to determine if a VM is released or not, and you can call
+on such a vm: However you can call .isValid() to determine if a VM is released or not, and you can call
 .renew() on an invalid state to create a new internal one.
 ```lua
-     vm.setLoadFunction(func)
-     vm.setLoadFunction(modeString)
+     vm:setLoadFunction(func)
+     vm:setLoadFunction(modeString)
 ```
 You can use this function to install a function (or mode of operation) that is called when 'import "XModule"'
 is called from Wren and XModule is not found internally. A function passed in here accepts the string name
@@ -61,8 +61,8 @@ of the module and either returns a Wren code string or nil if the module does no
 can select either of two operating modes: "lua.filesystem" and "love.filesystem" which will install functions
 internally to use io.open() or love.filesystem.read() respectively to resolve missing modules.
 ```lua
-     vm.handler(funcTable)
-     vm.handler(funcName, func)
+     vm:handler(funcTable)
+     vm:handler(funcName, func)
 ```
 Call this to install handler functions that can be called from Wren using the Host static class. If you pass
 a table, each string key with a matching function is added to the internal mapping. If you pass a name
@@ -70,29 +70,29 @@ string and a function, that is added to the internal mapping. Be default, two ha
 the VM: 'write' which calls lua print(), and 'error' which calls lua error(). You can override these with
 your own functions at will.
 ```lua
-     vm.interpret(codeString)
-     vm.interpret(codeString, moduleName)
+     vm:interpret(codeString)
+     vm:interpret(codeString, moduleName)
 ```
 Interprets the Wren code passed in codeString, either as module "main" by default, or your own module name
 passed in parameter 2.
 ```lua
-     func = vm.getMethod(moduleName, className, methodSig)
-     vm.freeMethod(moduleName, className, methodSig)
+     func = vm:getMethod(moduleName, className, methodSig)
+     vm:freeMethod(moduleName, className, methodSig)
 ```
 Locate the 'className.methodSig' method in module 'moduleName' - methodSig is a full Wren signature. This
 returns a function that calls that method when it is called in lua. Calling .freeMethod releases the internal
 mapping, and calling func() after that will fail in a spectacular manner.
 ```lua
-     vm.hasVariable(moduleName, varName)
-     vm.hasModule(moduleName)
+     vm:hasVariable(moduleName, varName)
+     vm:hasModule(moduleName)
 ```
 Returns true is the VM contains a given module, or a given top-level variable in a module, false if it does
 not.
 ```lua
-     myArray = vm.newArray()
-     myTable = vm.newTable()
+     myArray = vm:newArray()
+     myTable = vm:newTable()
 ```
-Creates and returns a Array or Table that can be sent to and from the internal Wren VM. Due to performance
+Creates and returns a Array or Table that can be sent to and from the internal Wren vm: Due to performance
 concerns, carrica will not marshal table types between Wren and lua. Instead these create shared table types:
 Array being a Wren List and Table being a Wren Map 'alike', but the data is purely on the lua side.
 ```lua
