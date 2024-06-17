@@ -1,0 +1,7 @@
+"return function(name)\n"
+"	local f = io.open(name .. '.wren', 'r')\n"
+"    if f == nil then return nil end\n"
+"    local content = f:read('*all')\n"
+"    f:close()\n"
+"    return content\n"
+"end\n"

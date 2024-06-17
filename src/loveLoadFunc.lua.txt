@@ -1,0 +1,3 @@
+"return function(name)\n"
+"	return love.filesystem.read(name .. '.wren')\n"
+"end\n"
