@@ -23,7 +23,7 @@ foreign class Table {
 	foreign values
 	foreign hold()
 	foreign release()
-	foreign iterate(iter))
+	foreign iterate(iter)
 	foreign iteratorValue(iter)
 }
 
@@ -49,7 +49,7 @@ foreign class Array {
 	foreign *(count)
 	foreign hold()
 	foreign release()
-	foreign iterate(iter))
+	foreign iterate(iter)
 	foreign iteratorValue(iter)
 }
 
