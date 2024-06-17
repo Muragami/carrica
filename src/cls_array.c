@@ -352,6 +352,37 @@ void avmFinalize(void *obj) {
 	free(ref);
 }
 
+void avmIterate(WrenVM *vm) {
+	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
+	int i = 0;
+	if (wrenGetSlotType(vm, 1) != WREN_TYPE_NUM) {
+		wrenSetSlotDouble(vm, 0, 0);
+		return;
+	} else {
+		i = (int)wrenGetSlotDouble(vm, 1);
+		carricaVM *cvm = wrenGetUserData(vm);
+		lua_pushlightuserdata(cvm->L, reref->pref);
+		lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+		if (i >= lua_objlen(cvm->L, -1)) {
+			wrenSetSlotBool(vm, 0, false);
+			lua_pop(cvm->L, 1);
+		} else {
+			wrenSetSlotDouble(vm, 0, (double)++i);
+		}
+		lua_pop(cvm->L, 1);
+	}
+}
+
+void avmIteratorValue(WrenVM *vm) {
+	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
+	carricaVM *cvm = wrenGetUserData(vm);
+	lua_pushlightuserdata(cvm->L, reref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	lua_rawgeti(cvm->L, -1, (int)wrenGetSlotDouble(vm, 1));
+	wrenSetSlotFromLua(cvm, 0, -1);
+	lua_pop(cvm->L, 2);
+}
+
 // ********************************************************************************
 // wrap it all up for Wren
 
@@ -374,6 +405,8 @@ const vmForeignMethodDef _a_func[] = {
 	{ false, "*(_)", avmTimes },
 	{ false, "hold()", avmHold },
 	{ false, "release()", avmRelease },
+	{ false, "iterate(_)", avmIterate },
+	{ false, "iteratorValue(_)", avmIteratorValue },
 	{ false, NULL, NULL }
 };
 

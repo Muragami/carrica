@@ -196,6 +196,66 @@ void tvmRelease(WrenVM *vm) {
 	if (reref->pref->refCount > 0) reref->pref->refCount--;
 }
 
+void tvmIterate(WrenVM *vm) {
+	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
+	carricaVM *cvm = wrenGetUserData(vm);
+	lua_pushlightuserdata(cvm->L, reref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	if (wrenGetSlotType(vm, 1) == WREN_TYPE_NULL) {
+		lua_pushnil(cvm->L);
+		if (lua_next(cvm->L, -2)) {
+			wrenSetSlotFromLua(cvm, 0, -2);
+			// store this key for the next call
+			lua_pushlightuserdata(cvm->L, reref);
+			lua_pushvalue(cvm->L, -3);
+			lua_settable(cvm->L, LUA_REGISTRYINDEX);
+		} else {
+			wrenSetSlotBool(vm, 0, false);
+			lua_pop(cvm->L, 2);
+			return;
+		}
+	} else {
+		// pull the last key out of the registry
+		lua_pushlightuserdata(cvm->L, reref);
+		lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+		if (lua_next(cvm->L, -2)) {
+			wrenSetSlotFromLua(cvm, 0, -2);
+			// store this key for the next call
+			lua_pushlightuserdata(cvm->L, reref);
+			lua_pushvalue(cvm->L, -3);
+			lua_settable(cvm->L, LUA_REGISTRYINDEX);
+		} else {
+			wrenSetSlotBool(vm, 0, false);
+			lua_pop(cvm->L, 2);
+			return;
+		}
+	}
+	lua_pop(cvm->L, 3);
+}
+
+void tvmIteratorValue(WrenVM *vm) {
+	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
+	carricaVM *cvm = wrenGetUserData(vm);
+	lua_pushlightuserdata(cvm->L, reref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	// get the stored key
+	lua_pushlightuserdata(cvm->L, reref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	lua_pushvalue(cvm->L, -1);
+	// pull the value from our table
+	lua_gettable(cvm->L, -2);
+	// key is at -2, and value is at -1 with the table at -3
+	wrenEnsureSlots(vm, 3);
+	wrenSetSlotNewMap(vm, 0);
+	wrenSetSlotString(vm, 1, "key");
+	wrenSetSlotFromLua(cvm, 2, -2);
+	wrenSetMapValue(vm, 0, 1, 2);
+	wrenSetSlotString(vm, 1, "value");
+	wrenSetSlotFromLua(cvm, 2, -1);
+	wrenSetMapValue(vm, 0, 1, 2);
+	lua_pop(cvm->L, 3);
+}
+
 
 // ********************************************************************************
 // wrap it all up for Wren
@@ -210,6 +270,8 @@ const vmForeignMethodDef _t_func[] = {
 	{ false, "values", tvmValues },
 	{ false, "hold()", tvmHold },
 	{ false, "release()", tvmRelease },	
+	{ false, "iterate(_)", tvmIterate },
+	{ false, "iteratorValue(_)", tvmIteratorValue },	
 	{ false, NULL, NULL }
 };
 

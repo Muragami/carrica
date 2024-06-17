@@ -23,6 +23,8 @@ foreign class Table {
 	foreign values
 	foreign hold()
 	foreign release()
+	foreign iterate(iter))
+	foreign iteratorValue(iter)
 }
 
 // this is a lua/host side array
@@ -47,6 +49,8 @@ foreign class Array {
 	foreign *(count)
 	foreign hold()
 	foreign release()
+	foreign iterate(iter))
+	foreign iteratorValue(iter)
 }
 
 // this allows you to make calls on the host via 'handlers' installed
