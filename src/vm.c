@@ -575,14 +575,18 @@ WrenForeignMethodFn vmBindForeignMethodInternal(WrenVM* vm, const char* module,
     					const char* className, bool isStatic, const char* signature) {
 	vmForeignModule *mod = imod.entry;
 	while (mod->tmethod != NULL) {
-		if (!strcmp(className, mod->tmethod->className)) {
-			// class match, look for the method now!
-			const vmForeignMethodDef *pMethod = mod->tmethod->entry;
-			while (pMethod->signature != NULL) {
-				if ((isStatic == pMethod->isStatic) && (!strcmp(signature, pMethod->signature)))
-					return pMethod->method;
-				pMethod++;
+		const vmForeignMethodTable *pt = mod->tmethod;
+		while (pt->className != NULL) {
+			if (!strcmp(className, pt->className)) {
+				// class match, look for the method now!
+				const vmForeignMethodDef *pMethod = pt->entry;
+				while (pMethod->signature != NULL) {
+					if ((isStatic == pMethod->isStatic) && (!strcmp(signature, pMethod->signature)))
+						return pMethod->method;
+					pMethod++;
+				}
 			}
+			pt++;	
 		}
 		mod++;
 	}
