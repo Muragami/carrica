@@ -33,6 +33,8 @@ void avmGet(WrenVM *vm) {
 		lua_pushinteger(cvm->L, (int)wrenGetSlotDouble(vm, 1) + 1);
 		lua_gettable(cvm->L, -2);
 		wrenSetSlotFromLua(cvm, 0, -1);
+		lua_pop(cvm->L, 2);
+		return;
 	} else 
 		wrenError(vm, "bad index passed to Array.get() numbers only");
 	lua_pop(cvm->L, 1);
@@ -74,7 +76,7 @@ void avmFilled(WrenVM *vm) {
 	if (cvm->handle.Array == NULL) cvm->handle.Array = lcvmGetClassHandle(cvm, "carrica", "Array");
 	wrenSetSlotHandle(vm, 1, cvm->handle.Array);
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
-	ref->type = VM_WREN_SHARE_TABLE;
+	ref->type = VM_WREN_SHARE_ARRAY;
 	ref->pref = avmLuaNewArray(wrenGetUserData(vm));
 	int cnt = (int)wrenGetSlotDouble(vm, 1);
 	lua_pushlightuserdata(cvm->L, ref->pref);
@@ -92,7 +94,7 @@ void avmFromList(WrenVM *vm) {
 	if (cvm->handle.Array == NULL) cvm->handle.Array = lcvmGetClassHandle(cvm, "carrica", "Array");
 	wrenSetSlotHandle(vm, 1, cvm->handle.Array);
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
-	ref->type = VM_WREN_SHARE_TABLE;
+	ref->type = VM_WREN_SHARE_ARRAY;
 	ref->pref = avmLuaNewArray(wrenGetUserData(vm));
 	int pos = 0;
 	wrenEnsureSlots(vm, 2);
@@ -376,7 +378,7 @@ void avmIteratorValue(WrenVM *vm) {
 	carricaVM *cvm = wrenGetUserData(vm);
 	lua_pushlightuserdata(cvm->L, reref->pref);
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
-	lua_rawgeti(cvm->L, -1, (int)wrenGetSlotDouble(vm, 1));
+	lua_rawgeti(cvm->L, -1, (int)wrenGetSlotDouble(vm, 1) + 1);
 	wrenSetSlotFromLua(cvm, 0, -1);
 	lua_pop(cvm->L, 2);
 }
