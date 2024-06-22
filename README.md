@@ -107,9 +107,45 @@ and .release() decreases the ref count inside so it can be garbage collected.
 # Wren - the carrica module
 When you provide Wren code to the carrica VM, it has access to the following module name "carrica":
 ```wren
+foreign class Array {
+	construct new() { }
+	construct copy(other) { addAll(other) }
+	foreign static filled(size, element)
+	foreign static fromList(list)
+
+	foreign [idx]
+	foreign [idx]=(value)
+	foreign add(item)
+	foreign addAll(other)
+	foreign clear()
+	foreign count
+	foreign indexOf(value)
+	foreign insert(index, item)
+	foreign remove(value)
+	foreign removeAt(index)
+	foreign sort()
+	foreign swap(a, b)
+	foreign +(other)
+	foreign *(count)
+	foreign list
+	foreign hold()
+	foreign release()
+	foreign iterate(iter)
+	foreign iteratorValue(iter)
+}
+
+foreign class TableEntry {
+	construct new() { }
+
+	foreign key
+	foreign value
+}
+
 // this is a lua/host side table
 foreign class Table {
 	construct new() { }
+
+	construct copy(other) { insertAll(other) }
 
 	static fromMap(map) {
 		var ret = Table.new()
@@ -126,32 +162,21 @@ foreign class Table {
 	foreign count
 	foreign keys
 	foreign values
+	foreign array
+	foreign list
 	foreign hold()
 	foreign release()
-}
+	foreign finsertAll(other)
+	foreign iterate(iter)
+	foreign iteratorValue(iter)
 
-// this is a lua/host side array
-foreign class Array {
-	construct new() { }
-	foreign static filled(size, element)
-	foreign static fromList(list)
-
-	foreign [idx]
-	foreign [idx]=(value)
-	foreign add(item)
-	foreign addAll(other)
-	foreign clear()
-	foreign count
-	foreign indexOf(value)
-	foreign insert(index, item)
-	foreign remove(value)
-	foreign removeAt(index)
-	foreign sort()		// Not Yet Implemented
-	foreign swap(a, b)
-	foreign +(other)
-	foreign *(count)	// Not Yet Implemented
-	foreign hold()
-	foreign release()
+	insertAll(other) {
+		if (other is Map) {
+			for (entry in other) {
+				this[entry.key] = entry.value
+			}
+		} else finsertAll(other)
+	}
 }
 
 // this allows you to make calls on the host via 'handlers' installed
