@@ -49,6 +49,15 @@ int lctRef(lua_State* L) {
 	return 1;
 }
 
+int lctSetRef(lua_State* L) {
+	vmWrenReference *ref = luaL_checkudata(L, 1, LUA_NAME_STABLE);
+	if (lua_type(L, 2) != LUA_TTABLE) luaL_error(L, "table.setRef() only accepts a table argument");
+	lua_pushlightuserdata(L, ref);
+	lua_pushvalue(L, 2);
+	lua_settable(L, LUA_REGISTRYINDEX);
+	return 0;
+}
+
 int lctHold(lua_State* L) {
 	vmWrenReference *ref = luaL_checkudata(L, 1, LUA_NAME_STABLE);
 	ref->refCount++;
@@ -63,6 +72,7 @@ int lctRelease(lua_State* L) {
 
 luaL_Reg lctfunc[] = {
 	{ "ref", lctRef },
+	{ "setRef", lctSetRef },
 	{ "hold", lctHold },
 	{ "release", lctRelease },
 	{ NULL, NULL }
@@ -87,6 +97,15 @@ int lcaRef(lua_State* L) {
 	return 1;
 }
 
+int lcaSetRef(lua_State* L) {
+	vmWrenReference *ref = luaL_checkudata(L, 1, LUA_NAME_SARRAY);
+	if (lua_type(L, 2) != LUA_TTABLE) luaL_error(L, "table.setRef() only accepts a table argument");
+	lua_pushlightuserdata(L, ref);
+	lua_pushvalue(L, 2);
+	lua_settable(L, LUA_REGISTRYINDEX);
+	return 0;
+}
+
 int lcaHold(lua_State* L) {
 	vmWrenReference *ref = luaL_checkudata(L, 1, LUA_NAME_SARRAY);
 	ref->refCount++;
@@ -102,6 +121,7 @@ int lcaRelease(lua_State* L) {
 
 luaL_Reg lcafunc[] = {
 	{ "ref", lcaRef },
+	{ "setRef", lcaSetRef },
 	{ "hold", lcaHold },
 	{ "release", lcaRelease },
 	{ NULL, NULL }
@@ -291,7 +311,7 @@ int lcvmNewArray(lua_State* L) {
 	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
 	// table is tucked away in the registry for later, now attach the class metatable
-	luaL_getmetatable (L, LUA_NAME_STABLE);
+	luaL_getmetatable (L, LUA_NAME_SARRAY);
 	lua_setmetatable(L, -2);
 	// now we need to make a wren side reference for this object
 	wrenEnsureSlots(cvm->vm, 2);
