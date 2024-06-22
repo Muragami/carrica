@@ -432,12 +432,24 @@ int lcInstallModule(lua_State *L) {
 	return 0;
 }
 
+int lcSetSortFunc(lua_State *L) {
+	if (lua_type(L, 1) == LUA_TFUNCTION) {
+		lua_pushlightuserdata(L, &mSortRef);
+		lua_pushvalue(L, -2);
+		lua_settable(L, LUA_REGISTRYINDEX);
+	} else {
+		luaL_error(L, "carrica -> .setSortFunc() called with a non-function parameter");
+	}
+	return 0;
+}
+
 luaL_Reg lfunc[] = {
 	{ "newVM", lcNewVM },						// create a new VM
 	{ "version", lcVersion },					// version of carrica
 	{ "hasDebug", lcHasDebug },					// compiled with debug?
 	{ "setDebugEmit", lcSetDebugEmit },			// set a function to accept debug emits
 	{ "installModule", lcInstallModule },		// install a shared source module for all VMs
+	{ "setSortFunc", lcSetSortFunc },			// set the default sort function for arrays
     { NULL, NULL }
 };
 
