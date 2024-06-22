@@ -22,6 +22,11 @@ vmWrenReference* tvmLuaNewTable(carricaVM *cvm) {
 	lua_pushlightuserdata(L, ret);
 	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
+	// store a ref to this so lua won't collect it
+	lua_pushlightuserdata(L, &ret->refCount);
+	lua_pushvalue(L, -2);
+	lua_settable(L, LUA_REGISTRYINDEX);
+	lua_pop(L, 1);
 	return ret;
 }
 
@@ -178,10 +183,14 @@ void tvmFinalize(void *obj) {
 	ref->pref->refCount--;
 	// last to hold the object? clean it up
 	if (ref->pref->refCount == 0) {
+		// remove the stored reference to this user data
+		lua_pushlightuserdata(ref->vm->L, &ref->pref->refCount);
+		lua_pushnil(ref->vm->L);
+		lua_settable(ref->vm->L, LUA_REGISTRYINDEX);
+		// remove the stored reference to the underlying table
 		lua_pushlightuserdata(ref->vm->L, ref->pref);
 		lua_pushnil(ref->vm->L);
 		lua_settable(ref->vm->L, LUA_REGISTRYINDEX);
-		free(ref->pref);
 	}
 }
 

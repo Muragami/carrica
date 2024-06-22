@@ -21,6 +21,11 @@ vmWrenReference* avmLuaNewArray(carricaVM *cvm) {
 	lua_pushlightuserdata(L, ret);
 	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
+	// store a ref to this so lua won't collect it
+	lua_pushlightuserdata(L, &ret->refCount);
+	lua_pushvalue(L, -2);
+	lua_settable(L, LUA_REGISTRYINDEX);
+	lua_pop(L, 1);
 	return ret;
 }
 
@@ -323,13 +328,28 @@ void avmRelease(WrenVM *vm) {
 }
 
 void avmSort(WrenVM *vm) {
-	// NYI
-	wrenError(vm, "Array.sort() not yet implemented");
+	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
+	carricaVM *cvm = wrenGetUserData(vm);
+	lua_pushSortFunction(cvm->L);
+	lua_pushlightuserdata(cvm->L, reref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	lua_call(cvm->L, 1, 0);
 }
 
 void avmTimes(WrenVM *vm) {
-	// NYI
-	wrenError(vm, "Array.*(_) not yet implemented");
+	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
+	carricaVM *cvm = wrenGetUserData(vm);
+	lua_pushlightuserdata(cvm->L, reref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	int cnt = wrenGetSlotDouble(vm, 1);
+	if (cvm->handle.Array == NULL) cvm->handle.Array = lcvmGetClassHandle(cvm, "carrica", "Array");
+	wrenSetSlotHandle(vm, 1, cvm->handle.Array);
+	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
+	ref->type = VM_WREN_SHARE_ARRAY;
+	ref->pref = avmLuaNewArray(cvm);
+	lua_pushlightuserdata(cvm->L, ref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+
 }
 
 // create and return a new Table
@@ -345,10 +365,14 @@ void avmFinalize(void *obj) {
 	vmWrenReReference* ref = obj;
 	ref->pref->refCount--;
 	if (ref->pref->refCount == 0) {
+		// remove the stored reference to this user data
+		lua_pushlightuserdata(ref->vm->L, &ref->pref->refCount);
+		lua_pushnil(ref->vm->L);
+		lua_settable(ref->vm->L, LUA_REGISTRYINDEX);
+		// remove the stored reference to the underlying table		
 		lua_pushlightuserdata(ref->vm->L, ref->pref);
 		lua_pushnil(ref->vm->L);
 		lua_settable(ref->vm->L, LUA_REGISTRYINDEX);
-		free(ref->pref);
 	}
 }
 
