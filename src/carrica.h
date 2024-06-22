@@ -21,3 +21,6 @@
 
 // the function that starts it all
 int luaopen_carrica(lua_State* L);
+
+// some shared functions
+void lua_pushSortFunction(lua_State *L);

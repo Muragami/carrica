@@ -491,3 +491,8 @@ int luaopen_carrica(lua_State* L) {
 	luaL_register(L, "carrica", lfunc);
 	return 1;
 }
+
+void lua_pushSortFunction(lua_State *L) {
+	lua_pushlightuserdata(L, &mSortRef);
+	lua_gettable(L, LUA_REGISTRYINDEX);
+}
