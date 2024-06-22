@@ -83,6 +83,7 @@ void avmFilled(WrenVM *vm) {
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_ARRAY;
 	ref->pref = avmLuaNewArray(wrenGetUserData(vm));
+	ref->vm = cvm;
 	int cnt = (int)wrenGetSlotDouble(vm, 1);
 	lua_pushlightuserdata(cvm->L, ref->pref);
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
@@ -91,29 +92,32 @@ void avmFilled(WrenVM *vm) {
 		lua_pushvalue(cvm->L, -1);
 		lua_rawseti(cvm->L, -2, i);
 	}
-	lua_pop(cvm->L, 2);
+	lua_pop(cvm->L, 1);
 }
 
 void avmFromList(WrenVM *vm) {
 	carricaVM *cvm = wrenGetUserData(vm);
+	wrenEnsureSlots(vm, 3);
 	if (cvm->handle.Array == NULL) cvm->handle.Array = lcvmGetClassHandle(cvm, "carrica", "Array");
-	wrenSetSlotHandle(vm, 1, cvm->handle.Array);
-	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
+	wrenSetSlotHandle(vm, 2, cvm->handle.Array);
+	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 2, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_ARRAY;
-	ref->pref = avmLuaNewArray(wrenGetUserData(vm));
+	ref->pref = avmLuaNewArray(cvm);
+	ref->vm = cvm;
 	int pos = 0;
-	wrenEnsureSlots(vm, 2);
+	lua_pushlightuserdata(cvm->L, ref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
 	if (wrenGetSlotType(vm, 1) == WREN_TYPE_LIST) {
 		int cnt = wrenGetListCount(vm, 1);
 		int c = 0;
 		while (c < cnt) {
-			wrenGetListElement(vm, 1, c++, 1);
-			luaPushFromWrenSlot(cvm, 1);
+			wrenGetListElement(vm, 1, c++, 2);
+			luaPushFromWrenSlot(cvm, 2);
 			lua_rawseti(cvm->L, -2, ++pos);
 		}
 	} else
 		wrenError(vm, "bad value passed to Array.fromList() list only");
-	lua_pop(cvm->L, 2);
+	lua_pop(cvm->L, 1);
 }
 
 void avmAdd(WrenVM *vm) {
@@ -133,13 +137,13 @@ void avmAddAll(WrenVM *vm) {
 	lua_pushlightuserdata(cvm->L, reref->pref);
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
 	int pos = lua_objlen(cvm->L, -1);
-	wrenEnsureSlots(vm, 2);
+	wrenEnsureSlots(vm, 3);
 	if (wrenGetSlotType(vm, 1) == WREN_TYPE_LIST) {
 		int cnt = wrenGetListCount(vm, 1);
 		int c = 0;
 		while (c < cnt) {
-			wrenGetListElement(vm, 1, c++, 1);
-			luaPushFromWrenSlot(cvm, 1);
+			wrenGetListElement(vm, 1, c++, 2);
+			luaPushFromWrenSlot(cvm, 2);
 			lua_rawseti(cvm->L, -2, ++pos);
 		}
 	} else
@@ -283,7 +287,7 @@ void avmSwap(WrenVM *vm) {
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
 	int end = lua_objlen(cvm->L, -1);
 	int a = (int)wrenGetSlotDouble(vm, 1);
-	int b = (int)wrenGetSlotDouble(vm, 1);
+	int b = (int)wrenGetSlotDouble(vm, 2);
 	if (a < 0) {
 		a = end + a;
 		if (a < 0) {
@@ -351,6 +355,7 @@ void avmTimes(WrenVM *vm) {
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_ARRAY;
 	ref->pref = avmLuaNewArray(cvm);
+	ref->vm = cvm;
 	lua_pushlightuserdata(cvm->L, ref->pref);
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
 	// ok now we just fill the new table 'cnt' times
