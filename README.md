@@ -113,8 +113,6 @@ foreign class Array {
 	foreign static filled(size, element)
 	foreign static fromList(list)
 
-	foreign [idx]
-	foreign [idx]=(value)
 	foreign add(item)
 	foreign addAll(other)
 	foreign clear()
@@ -132,6 +130,9 @@ foreign class Array {
 	foreign release()
 	foreign iterate(iter)
 	foreign iteratorValue(iter)
+
+	foreign [idx]
+	foreign [idx]=(value)
 }
 
 foreign class TableEntry {
@@ -155,8 +156,6 @@ foreign class Table {
 		return ret
 	}
 
-	foreign [key]
-	foreign [key]=(value)
 	foreign clear()
 	foreign containsKey(key)
 	foreign count
@@ -177,6 +176,9 @@ foreign class Table {
 			}
 		} else finsertAll(other)
 	}
+
+	foreign [key]
+	foreign [key]=(value)
 }
 
 // this allows you to make calls on the host via 'handlers' installed
