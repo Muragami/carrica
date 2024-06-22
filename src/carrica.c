@@ -454,10 +454,6 @@ void lua_newmeta(lua_State *L, const char *name, luaL_Reg* func, lua_CFunction g
 	lua_pop(L, 1);
 }
 
-const char *mergeSort =
-#include "mergeSort.lua.txt"
-;
-
 // load carrica into the lua state
 int luaopen_carrica(lua_State* L) {
 	// store the state if we need it later
@@ -473,10 +469,12 @@ int luaopen_carrica(lua_State* L) {
 		lua_pushlightuserdata(L, &mEmitRef);
 		lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
-	// a merge sort function
+	// store table.sort() as our sort function
+	lua_getglobal(L, "table");
 	lua_pushlightuserdata(L, &mSortRef);
-	luaL_dostring(L, mergeSort);
+	lua_getfield(L, -2, "sort");
 	lua_settable(L, LUA_REGISTRYINDEX);
+	lua_pop(L, 1); // remove global 'table'
 	// register our functions
 	luaL_register(L, "carrica", lfunc);
 	return 1;
