@@ -146,8 +146,22 @@ void avmAddAll(WrenVM *vm) {
 			luaPushFromWrenSlot(cvm, 2);
 			lua_rawseti(cvm->L, -2, ++pos);
 		}
+	} else if (wrenGetSlotType(vm, 1) == WREN_TYPE_FOREIGN) {
+		vmWrenReReference *other = wrenGetSlotForeign(vm, 1);
+		if (other->type != VM_WREN_SHARE_ARRAY) {
+			wrenError(vm, "bad value passed to Array.addAll() list or Array only");	
+		} else {
+			lua_pushlightuserdata(cvm->L, other->pref);
+			lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+			int cnt = lua_objlen(cvm->L, -1);
+			for (int i = 0; i < cnt; i++) {
+				lua_rawgeti(cvm->L, -1, i + 1);
+				lua_rawseti(cvm->L, -3, ++pos);
+			}
+			lua_pop(cvm->L, 1);
+		}
 	} else
-		wrenError(vm, "bad value passed to Array.addAll() list only");
+		wrenError(vm, "bad value passed to Array.addAll() list or Array only");
 	lua_pop(cvm->L, 1);
 }
 void avmPlus(WrenVM *vm) { avmAddAll(vm); }
@@ -370,6 +384,22 @@ void avmTimes(WrenVM *vm) {
 	lua_pop(cvm->L, 2);	// remove the two tables on thes stack
 }
 
+void avmList(WrenVM *vm) {
+	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
+	carricaVM *cvm = wrenGetUserData(vm);
+	lua_pushlightuserdata(cvm->L, reref->pref);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	int len = lua_objlen(cvm->L, -1);
+	wrenEnsureSlots(vm, 2);
+	wrenSetSlotNewList(vm, 0);
+	for (int i = 0; i < len; i++) {
+		lua_rawgeti(cvm->L, -1, i + 1);
+		wrenSetSlotFromLua(cvm, 1, -1);
+		wrenInsertInList(vm, 0, -1, 1);
+		lua_pop(cvm->L, 1);
+	}
+}
+
 // create and return a new Table
 void avmAllocate(WrenVM* vm) {
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 0, VM_REREF_SIZE);
@@ -449,6 +479,7 @@ const vmForeignMethodDef _a_func[] = {
 	{ false, "release()", avmRelease },
 	{ false, "iterate(_)", avmIterate },
 	{ false, "iteratorValue(_)", avmIteratorValue },
+	{ false, "list", avmList },
 	{ false, NULL, NULL }
 };
 
