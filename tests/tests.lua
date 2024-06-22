@@ -32,4 +32,7 @@ print('\n---\n')
 runTest('table.wren')
 print('\n---\n')
 
+runTest('array.wren')
+print('\n---\n')
+
 print('tests.lua complete\n')
