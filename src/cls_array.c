@@ -339,9 +339,13 @@ void avmSort(WrenVM *vm) {
 void avmTimes(WrenVM *vm) {
 	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
 	carricaVM *cvm = wrenGetUserData(vm);
+	int cnt = wrenGetSlotDouble(vm, 1);
+	if (cnt < 1) {
+		wrenError(vm, "array.*() called with a bad integer value");
+		return;
+	}
 	lua_pushlightuserdata(cvm->L, reref->pref);
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
-	int cnt = wrenGetSlotDouble(vm, 1);
 	if (cvm->handle.Array == NULL) cvm->handle.Array = lcvmGetClassHandle(cvm, "carrica", "Array");
 	wrenSetSlotHandle(vm, 1, cvm->handle.Array);
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
@@ -349,7 +353,16 @@ void avmTimes(WrenVM *vm) {
 	ref->pref = avmLuaNewArray(cvm);
 	lua_pushlightuserdata(cvm->L, ref->pref);
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
-
+	// ok now we just fill the new table 'cnt' times
+	int len = lua_objlen(cvm->L, -2);
+	int pos = 1;
+	while (cnt-- > 0) {
+		for (int i = 0; i < len; i++) {
+			lua_rawgeti(cvm->L, -2, i + 1);
+			lua_rawseti(cvm->L, -2, pos++);
+		}
+	}
+	lua_pop(cvm->L, 2);	// remove the two tables on thes stack
 }
 
 // create and return a new Table
