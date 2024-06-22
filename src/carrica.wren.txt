@@ -24,6 +24,7 @@
 "	foreign swap(a, b)\n"
 "	foreign +(other)\n"
 "	foreign *(count)\n"
+"	foreign list\n"
 "	foreign hold()\n"
 "	foreign release()\n"
 "	foreign iterate(iter)\n"

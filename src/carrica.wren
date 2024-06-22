@@ -24,6 +24,7 @@ foreign class Array {
 	foreign swap(a, b)
 	foreign +(other)
 	foreign *(count)
+	foreign list
 	foreign hold()
 	foreign release()
 	foreign iterate(iter)
