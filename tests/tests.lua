@@ -3,7 +3,7 @@
 ]]
 
 function readFile(file)
-    local f = assert(io.open(file, "rb"))
+    local f = assert(io.open(file, "r"))
     local content = f:read("*all")
     f:close()
     return content
@@ -21,6 +21,10 @@ function runTest(file)
     vm:release()
 end
 
+function customEmit(str)
+    io.write("EMIT:: " .. str)
+end
+
 -- load the dynamic library
 carrica = require 'carrica'
 print("Carrica module version: " .. carrica.version())
@@ -33,6 +37,16 @@ runTest('table.wren')
 print('\n---\n')
 
 runTest('array.wren')
+print('\n---\n')
+
+carrica.setDebugEmit(customEmit)
+runTest('simple.wren')
+print('\n---\n')
+
+-- add a shared module
+carrica.installModule('trait', readFile('trait.wren'))
+
+runTest('final.wren')
 print('\n---\n')
 
 print('tests.lua complete\n')
