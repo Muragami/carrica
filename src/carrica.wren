@@ -90,6 +90,8 @@ class Host {
 	foreign static call(ref, a, b, c, d, e, f)
 	foreign static call(ref, a, b, c, d, e, f, g)
 	foreign static call(ref, a, b, c, d, e, f, g, h)
+
+	static version { "0.1.0 Tenma" }
 }
 
 /*

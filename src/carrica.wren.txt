@@ -90,6 +90,8 @@
 "	foreign static call(ref, a, b, c, d, e, f)\n"
 "	foreign static call(ref, a, b, c, d, e, f, g)\n"
 "	foreign static call(ref, a, b, c, d, e, f, g, h)\n"
+"\n"
+"	static version { \"0.1.0 Tenma\" }\n"
 "}\n"
 "\n"
 "/*\n"
