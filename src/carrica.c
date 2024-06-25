@@ -445,10 +445,26 @@ int lcSetDebugEmit(lua_State *L) {
 	return 0;
 }
 
+typedef struct _sharedModule {
+	const char *name;
+	const char *source;
+	UT_hash_handle hh;
+} sharedModule;
+
+sharedModule *smodEntry = NULL;
+
 int lcInstallModule(lua_State *L) {
-	const char *name = luaL_checkstring(L, 1);
-	const char *source = luaL_checkstring(L, 2);
-	vmInstallSharedSource(name, source);
+	const char *name = strdup(luaL_checkstring(L, 1));
+	const char *source = strdup(luaL_checkstring(L, 2));
+	sharedModule *s;
+	HASH_FIND_STR(smodEntry, name, s);
+	if (s == NULL) {
+		vmInstallSharedSource(name, source);
+		s = calloc(sizeof(sharedModule), 1);
+		s->name = name;
+		s->source = source;
+		HASH_ADD_KEYPTR(hh, smodEntry, s->name, strlen(s->name), s);
+	}
 	return 0;
 }
 
