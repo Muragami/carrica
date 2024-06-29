@@ -749,6 +749,8 @@ void vmRelease(carricaVM *cvm) {
 			if (m->hClass) wrenReleaseHandle(cvm->vm, m->hClass);
     		free(m);
   		}
+  		// free the name string
+  		free(cvm->name);
 		// free the VM
 		wrenFreeVM(cvm->vm);
 #ifdef CARRICA_USE_THREADS
