@@ -158,7 +158,7 @@ const char *loveLoadFunc =
 
 int lcvmSetLoadFunction(lua_State* L) {
 	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
-	if (vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an VALID VM instance", ".setLoadFunction()");
+	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".setLoadFunction()");
 	if (lua_isnil(L, 2)) {
 		if (cvm->refs.loadModule) {
 			lua_pushlightuserdata(L, cvm->refs.loadModule);
