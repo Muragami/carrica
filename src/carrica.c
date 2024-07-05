@@ -256,6 +256,9 @@ int lcvmGetMethod(lua_State* L) {
 	const char *className = luaL_checkstring(L, 3);
 	const char *methodSig = luaL_checkstring(L, 4);
 	vmWrenMethod *p = vmGetMethod(cvm, moduleName, className, methodSig);
+	if (p == NULL) 
+		luaL_error(L, "carrica -> could not find method '%s' for class '%s' in module '%s", 
+					methodSig, className, moduleName);
 	lua_pushlightuserdata(L, cvm);
 	lua_pushlightuserdata(L, p);
 	lua_pushcclosure(L, callMethod, 2);

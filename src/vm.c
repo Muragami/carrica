@@ -880,13 +880,16 @@ vmWrenMethod *vmGetMethod(carricaVM* cvm, const char *module, const char* classN
 	if (ret) return ret;
 	ret = calloc(VM_WMETHOD_SIZE, 1);
 	strcpy(ret->name, buffer);
-	HASH_ADD_STR(cvm->methodHash, name, ret);
 	if (wrenHasModule(cvm->vm, module) && wrenHasVariable(cvm->vm, module, className)) {
 		wrenGetVariable(cvm->vm, module, className, 0);
 		ret->hClass = wrenGetSlotHandle(cvm->vm, 0);
 		ret->hMethod = wrenMakeCallHandle(cvm->vm, sig);
+		HASH_ADD_STR(cvm->methodHash, name, ret);
+		return ret;
+	} else {
+		free(ret);
+		return NULL;
 	}
-	return ret;
 }
 
 void vmFreeMethod(carricaVM* cvm, vmWrenMethod *p) {
