@@ -222,8 +222,9 @@ int lcvmHandler(lua_State* L) {
 		lua_pushvalue(L, 3);
 		lua_settable(L, -3);
 		lua_pop(L, 1);
+	} else {
+		luaL_error(L, "carrica -> badly formatted call to %s", ".handler()");
 	}
-	luaL_error(L, "carrica -> badly formatted call to %s", ".handler()");
 	return 0;
 }
 
