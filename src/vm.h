@@ -70,6 +70,7 @@ typedef struct _carricaLuaRefs {
 } carricaLuaRefs;
 
 typedef struct _carricaVM {
+	vmWrenMethod *methodHash;
 	WrenConfiguration config;
 	carricaTypeHandles handle;
 	carricaLuaRefs refs;
@@ -79,7 +80,6 @@ typedef struct _carricaVM {
 	carricaModTable modtable;
 	int id;
 	char* name;
-	vmWrenMethod *methodHash;
 #ifdef CARRICA_USE_THREADS
 	pthread_mutex_t lock;
 #endif
@@ -157,7 +157,7 @@ typedef struct _vmWrenReReference {
 // size of the VM module table struct
 #define VM_REREF_SIZE			sizeof(vmWrenReReference)
 // size of the wrenMethod table struct
-#define VM_WMETHOD_SIZE			sizeof(vmWrenReReference)
+#define VM_WMETHOD_SIZE			sizeof(vmWrenMethod)
 
 
 // ********************************************************************************
