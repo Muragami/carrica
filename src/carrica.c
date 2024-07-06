@@ -201,8 +201,8 @@ int lcvmHandler(lua_State* L) {
 		lua_pushnil(L);  /* first key */
      	while (lua_next(L, 2) != 0) {
        		/* uses 'key' (at index -2) and 'value' (at index -1) */
-       		if (lua_type(L, -2) == LUA_TSTRING) {
-       			// we only work with strings
+       		if (lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TFUNCTION) {
+       			// we only work with strings that point to functions
        			// store the function in the registry table
        			lua_pushvalue(L, -2);
        			lua_pushvalue(L, -2);
@@ -212,8 +212,10 @@ int lcvmHandler(lua_State* L) {
        		// pop the value and use the key to find the next key and repeat
        		lua_pop(L, 1);
      	}
-     	lua_pop(L, 2); // pop the last key and the table
+     	lua_settop(L, t - 1); // clean up the stack
 	} else if (lua_type(L, 2) == LUA_TSTRING) {
+		if (lua_type(L, 3) != LUA_TFUNCTION) 
+			luaL_error(L, "carrica -> %s called with a bad value, syntax is: VM:handler('name', func)", ".handler()");
 		const char *name = luaL_checkstring(L, 2);
 		// called as .handler("error", errorFunction)
 		lua_pushlightuserdata(L, cvm);
@@ -393,7 +395,7 @@ luaL_Reg lcvmfunc[] = {
 };
 
 int lcNewVM(lua_State* L) {
-	carricaVM *vm = lua_newuserdata (L, VM_BYTE_SIZE);
+	carricaVM *vm = lua_newuserdata(L, VM_BYTE_SIZE);
 	const char *name = lua_tostring(L, 1);
 	vmNew(L, vm, name);
 	// add default handlers
