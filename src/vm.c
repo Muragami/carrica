@@ -877,26 +877,18 @@ vmWrenMethod *vmGetMethod(carricaVM* cvm, const char *module, const char* classN
 	static char buffer[256];
 	vmWrenMethod *ret = NULL;
 	snprintf(buffer, 256, "%s:%s.%s", module, className, sig);
-	printf("debug:: %s\n", buffer);
 	HASH_FIND_STR(cvm->methodHash, buffer, ret);
 	if (ret) return ret;
-	printf("create:: %s\n", buffer);
 	ret = calloc(VM_WMETHOD_SIZE, 1);
 	memcpy(ret->name, buffer, 255);
-	printf(">\n");
 	if (wrenHasModule(cvm->vm, module) && wrenHasVariable(cvm->vm, module, className)) {
-		printf("-\n");
 		wrenEnsureSlots(cvm->vm, 1);
-		printf("!\n");
 		wrenGetVariable(cvm->vm, module, className, 0);
-		printf("*\n");
 		ret->hClass = wrenGetSlotHandle(cvm->vm, 0);
 		ret->hMethod = wrenMakeCallHandle(cvm->vm, sig);
 		HASH_ADD_STR(cvm->methodHash, name, ret);
-		printf("done:: %s\n", buffer);
 		return ret;
 	} else {
-		printf("fail:: %s\n", buffer);
 		free(ret);
 		return NULL;
 	}
