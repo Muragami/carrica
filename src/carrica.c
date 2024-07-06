@@ -38,8 +38,8 @@ int lctGC(lua_State* L) {
 		lua_pushlightuserdata(L, ref);
 		lua_pushnil(L);
 		lua_settable(L, LUA_REGISTRYINDEX);
-		// release the wren handle
-		wrenReleaseHandle(ref->cvm->vm, ref->handle);
+		// release the wren handle - causes crash!!!
+		//wrenReleaseHandle(ref->cvm->vm, ref->handle);
 	}
 	return 0;
 }
@@ -88,8 +88,8 @@ int lcaGC(lua_State* L) {
 		lua_pushlightuserdata(L, ref);
 		lua_pushnil(L);
 		lua_settable(L, LUA_REGISTRYINDEX);
-		// release the wren handle
-		wrenReleaseHandle(ref->cvm->vm, ref->handle);
+		// release the wren handle - causes crash!!!
+		//wrenReleaseHandle(ref->cvm->vm, ref->handle);
 	}
 	return 0;
 }
