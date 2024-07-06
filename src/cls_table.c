@@ -184,8 +184,8 @@ void tvmAllocate(WrenVM* vm) {
 // remove a table
 void tvmFinalize(void *obj) {
 	vmWrenReReference* ref = obj;
+	// we do nothing but deincrement reference count, and let lua side handle cleanup
 	if (ref->pref->refCount > 0) ref->pref->refCount--;
-	// let lua handle cleanup in garbage collection
 }
 
 void tvmHold(WrenVM *vm) {

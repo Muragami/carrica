@@ -346,6 +346,7 @@ void avmHold(WrenVM *vm) {
 
 void avmRelease(WrenVM *vm) {
 	vmWrenReReference *reref = wrenGetSlotForeign(vm, 0);
+	// we do nothing but deincrement reference count, and let lua side handle cleanup
 	if (reref->pref->refCount > 0) reref->pref->refCount--;
 }
 

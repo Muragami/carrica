@@ -38,8 +38,8 @@ int lctGC(lua_State* L) {
 		lua_pushlightuserdata(L, ref);
 		lua_pushnil(L);
 		lua_settable(L, LUA_REGISTRYINDEX);
-		// release the wren handle - causes crash!!!
-		//wrenReleaseHandle(ref->cvm->vm, ref->handle);
+		// release the wren handle
+		wrenReleaseHandle(ref->cvm->vm, ref->handle);
 	}
 	return 0;
 }
@@ -88,8 +88,8 @@ int lcaGC(lua_State* L) {
 		lua_pushlightuserdata(L, ref);
 		lua_pushnil(L);
 		lua_settable(L, LUA_REGISTRYINDEX);
-		// release the wren handle - causes crash!!!
-		//wrenReleaseHandle(ref->cvm->vm, ref->handle);
+		// release the wren handle
+		wrenReleaseHandle(ref->cvm->vm, ref->handle);
 	}
 	return 0;
 }
@@ -317,6 +317,8 @@ int lcvmNewArray(lua_State* L) {
 	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	vmWrenReference *ref = lua_newuserdata(L, VM_REF_SIZE);
 	ref->type = VM_WREN_SHARE_ARRAY;
+	ref->refCount = 1;
+	ref->cvm = cvm;
 	lua_pushlightuserdata(L, ref);
 	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
@@ -331,7 +333,6 @@ int lcvmNewArray(lua_State* L) {
 	reref->type = VM_WREN_SHARE_ARRAY;
 	reref->pref = ref;
 	reref->cvm = cvm;
-	ref->refCount = 1;
 	ref->handle = wrenGetSlotHandle(cvm->vm, 0);
 	// all good, return the userdata
 	return 1;
@@ -342,6 +343,7 @@ int lcvmNewTable(lua_State* L) {
 	vmWrenReference *ref = lua_newuserdata(L, VM_REF_SIZE);
 	ref->type = VM_WREN_SHARE_TABLE;
 	ref->refCount = 1;
+	ref->cvm = cvm;
 	lua_pushlightuserdata(L, ref);
 	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
