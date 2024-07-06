@@ -22,6 +22,9 @@ vmWrenReference* tvmLuaNewTable(carricaVM *cvm) {
 	lua_pushlightuserdata(L, ret);
 	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
+	// table is tucked away in the registry for later, now attach the class metatable
+	luaL_getmetatable (L, LUA_NAME_STABLE);
+	lua_setmetatable(L, -2);
 	// store a ref to this so lua won't collect it
 	lua_pushlightuserdata(L, &ret->refCount);
 	lua_pushvalue(L, -2);
