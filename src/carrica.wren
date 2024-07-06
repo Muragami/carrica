@@ -96,9 +96,12 @@ class Host {
 
 /*
 
-// NYI: this is a lua/host side buffer memory block
+// NYI: this is a host side buffer memory block
 foreign class Buffer {
-	construct new(sz) { size(sz) }
+	construct new(mode, sz) { 
+		setMode(mode)
+		size(sz) }
+		
 	foreign [idx]
 	foreign [idx]=(value)
 	foreign clear()
