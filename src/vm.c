@@ -558,9 +558,10 @@ WrenLoadModuleResult vmLoadModule(WrenVM* vm, const char* name) {
 			char *mem;
 			size_t len;
 			str = lua_tolstring(cvm->L, -1, &len);
-			mem = malloc(len);
+			mem = malloc(len + 1);
 			if (mem == NULL) luaL_error(cvm->L, "memory allocation failure in vmLoadModule()");
 			memcpy(mem, str, len);
+			mem[len] = 0;
 			result.source = mem;
 			result.onComplete = loadModuleComplete;
 		}
@@ -876,17 +877,26 @@ vmWrenMethod *vmGetMethod(carricaVM* cvm, const char *module, const char* classN
 	static char buffer[256];
 	vmWrenMethod *ret = NULL;
 	snprintf(buffer, 256, "%s:%s.%s", module, className, sig);
+	printf("debug:: %s\n", buffer);
 	HASH_FIND_STR(cvm->methodHash, buffer, ret);
 	if (ret) return ret;
+	printf("create:: %s\n", buffer);
 	ret = calloc(VM_WMETHOD_SIZE, 1);
-	strcpy(ret->name, buffer);
+	memcpy(ret->name, buffer, 255);
+	printf(">\n");
 	if (wrenHasModule(cvm->vm, module) && wrenHasVariable(cvm->vm, module, className)) {
+		printf("-\n");
+		wrenEnsureSlots(cvm->vm, 1);
+		printf("!\n");
 		wrenGetVariable(cvm->vm, module, className, 0);
+		printf("*\n");
 		ret->hClass = wrenGetSlotHandle(cvm->vm, 0);
 		ret->hMethod = wrenMakeCallHandle(cvm->vm, sig);
 		HASH_ADD_STR(cvm->methodHash, name, ret);
+		printf("done:: %s\n", buffer);
 		return ret;
 	} else {
+		printf("fail:: %s\n", buffer);
 		free(ret);
 		return NULL;
 	}
@@ -907,6 +917,8 @@ void vmFreeMethod(carricaVM* cvm, vmWrenMethod *p) {
 }
 
 void vmCallMethodFromLua(carricaVM *cvm, vmWrenMethod *p, int top) {
+	// make sure we have slots
+	wrenEnsureSlots(cvm->vm, top + 1);
 	// setup the receiver class
 	wrenSetSlotHandle(cvm->vm, 0, p->hClass);
 	// push the arguments
