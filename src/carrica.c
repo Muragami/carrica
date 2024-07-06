@@ -37,7 +37,7 @@ int lctGC(lua_State* L) {
 		lua_pushlightuserdata(L, ref);
 		lua_pushnil(L);
 		lua_settable(L, LUA_REGISTRYINDEX);
-		free(ref);
+		//free(ref);
 	}
 	return 0;
 }
@@ -79,13 +79,13 @@ luaL_Reg lctfunc[] = {
 };
 
 int lcaGC(lua_State* L) {
-	vmWrenReference *ref = luaL_checkudata(L, 1, LUA_NAME_STABLE);
+	vmWrenReference *ref = luaL_checkudata(L, 1, LUA_NAME_SARRAY);
 	ref->refCount--;
 	if (ref->refCount == 0) {
 		lua_pushlightuserdata(L, ref);
 		lua_pushnil(L);
 		lua_settable(L, LUA_REGISTRYINDEX);
-		free(ref);
+		//free(ref);
 	}
 	return 0;
 }
@@ -128,20 +128,20 @@ luaL_Reg lcafunc[] = {
 };
 
 int lcvmRelease(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".release()");
 	vmRelease(cvm);
 	return 0;
 }
 
 int lcvmIsValid(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	lua_pushboolean(L, vmIsValid(cvm));
 	return 1;
 }
 
 int lcvmRenew(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	if (vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an VALID VM instance", ".renew()");
 	const char *name = lua_tostring(L, 2);
 	vmNew(cvm->L, cvm, name);
@@ -157,7 +157,7 @@ const char *loveLoadFunc =
 ;
 
 int lcvmSetLoadFunction(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".setLoadFunction()");
 	if (lua_isnil(L, 2)) {
 		if (cvm->refs.loadModule) {
@@ -190,7 +190,7 @@ int lcvmSetLoadFunction(lua_State* L) {
 }
 
 int lcvmHandler(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".handler()");
 	if (lua_type(L, 2) == LUA_TTABLE) {
 		// called as .handler(tableOfHandlers)
@@ -231,7 +231,7 @@ int lcvmHandler(lua_State* L) {
 }
 
 int lcvmInterpret(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".interpret()");
 	const char *code = luaL_checkstring(L, 2);
 	const char *module = "main";
@@ -252,7 +252,7 @@ int callMethod(lua_State* L) {
 }
 
 int lcvmGetMethod(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".call()");
 	const char *moduleName = luaL_checkstring(L, 2);
 	const char *className = luaL_checkstring(L, 3);
@@ -268,7 +268,7 @@ int lcvmGetMethod(lua_State* L) {
 }
 
 int lcvmFreeMethod(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".call()");
 	const char *moduleName = luaL_checkstring(L, 2);
 	const char *className = luaL_checkstring(L, 3);
@@ -287,7 +287,7 @@ int lcvmFreeMethod(lua_State* L) {
 }
 
 int lcvmHasVariable(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".hasVariable()");
 	const char *module = luaL_checkstring(L, 2);
 	const char *name = luaL_checkstring(L, 3);
@@ -296,7 +296,7 @@ int lcvmHasVariable(lua_State* L) {
 }
 
 int lcvmHasModule(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".hasModule()");
 	const char *name = luaL_checkstring(L, 2);
 	lua_pushboolean(L, vmHasModule(cvm, name));
@@ -310,7 +310,7 @@ int lcvmGC(lua_State* L) {
 }
 
 int lcvmNewArray(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	vmWrenReference *ref = lua_newuserdata(L, VM_REF_SIZE);
 	ref->type = VM_WREN_SHARE_ARRAY;
 	lua_pushlightuserdata(L, ref);
@@ -334,9 +334,10 @@ int lcvmNewArray(lua_State* L) {
 }
 
 int lcvmNewTable(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	vmWrenReference *ref = lua_newuserdata(L, VM_REF_SIZE);
 	ref->type = VM_WREN_SHARE_TABLE;
+	ref->refCount = 1;
 	lua_pushlightuserdata(L, ref);
 	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
@@ -351,7 +352,6 @@ int lcvmNewTable(lua_State* L) {
 	reref->type = VM_WREN_SHARE_TABLE;
 	reref->pref = ref;
 	reref->vm = cvm;
-	ref->refCount = 1;
 	ref->handle = wrenGetSlotHandle(cvm->vm, 0);
 	// all good, return the userdata
 	return 1;
@@ -359,7 +359,7 @@ int lcvmNewTable(lua_State* L) {
 
 // NYI
 int lcvmGetClass(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".getClassObj()");
 	luaL_error(L, "carrica -> vm.getClassObj() not yet implemented");
 	return 0;
@@ -367,7 +367,7 @@ int lcvmGetClass(lua_State* L) {
 
 /// NYI
 int lcvmFreeClass(lua_State* L) {
-	carricaVM *cvm = luaL_checkudata (L, 1, LUA_NAME_WRENVM);
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
 	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".freeClassObj()");
 	luaL_error(L, "carrica -> vm.freeClassObj() not yet implemented");
 	return 0;
