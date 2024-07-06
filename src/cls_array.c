@@ -18,6 +18,7 @@ vmWrenReference* avmLuaNewArray(carricaVM *cvm) {
 	vmWrenReference* ret = lua_newuserdata(L, VM_REF_SIZE);
 	ret->type = VM_WREN_SHARE_ARRAY;
 	ret->refCount = 1;
+	ret->cvm = cvm;
 	lua_pushlightuserdata(L, ret);
 	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
@@ -86,7 +87,7 @@ void avmFilled(WrenVM *vm) {
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_ARRAY;
 	ref->pref = avmLuaNewArray(wrenGetUserData(vm));
-	ref->vm = cvm;
+	ref->cvm = cvm;
 	int cnt = (int)wrenGetSlotDouble(vm, 1);
 	lua_pushlightuserdata(cvm->L, ref->pref);
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
@@ -106,7 +107,7 @@ void avmFromList(WrenVM *vm) {
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 2, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_ARRAY;
 	ref->pref = avmLuaNewArray(cvm);
-	ref->vm = cvm;
+	ref->cvm = cvm;
 	int pos = 0;
 	lua_pushlightuserdata(cvm->L, ref->pref);
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
@@ -372,7 +373,7 @@ void avmTimes(WrenVM *vm) {
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_ARRAY;
 	ref->pref = avmLuaNewArray(cvm);
-	ref->vm = cvm;
+	ref->cvm = cvm;
 	lua_pushlightuserdata(cvm->L, ref->pref);
 	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
 	// ok now we just fill the new table 'cnt' times
@@ -408,23 +409,14 @@ void avmAllocate(WrenVM* vm) {
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 0, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_ARRAY;
 	ref->pref = avmLuaNewArray(wrenGetUserData(vm));
-	ref->vm = wrenGetUserData(vm);
+	ref->cvm = wrenGetUserData(vm);
 }
 
 // remove a table
 void avmFinalize(void *obj) {
 	vmWrenReReference* ref = obj;
-	ref->pref->refCount--;
-	if (ref->pref->refCount == 0) {
-		// remove the stored reference to this user data
-		lua_pushlightuserdata(ref->vm->L, &ref->pref->refCount);
-		lua_pushnil(ref->vm->L);
-		lua_settable(ref->vm->L, LUA_REGISTRYINDEX);
-		// remove the stored reference to the underlying table		
-		lua_pushlightuserdata(ref->vm->L, ref->pref);
-		lua_pushnil(ref->vm->L);
-		lua_settable(ref->vm->L, LUA_REGISTRYINDEX);
-	}
+	if (ref->pref->refCount > 0) ref->pref->refCount--;
+	// let lua handle cleanup in garbage collection
 }
 
 void avmIterate(WrenVM *vm) {

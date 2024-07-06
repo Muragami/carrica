@@ -122,20 +122,21 @@ typedef int (*vmDebugEmit)(const char *s, ...);
 // ********************************************************************************
 // a shared object from wren to lua
 
-#define VM_WREN_SHARE_ARRAY		0xF0F00001
-#define VM_WREN_SHARE_TABLE		0xF0F00002
-#define VM_WREN_SHARE_LSOBJ		0xF0F00003
+#define VM_WREN_SHARE_ARRAY			0xF0F00001
+#define VM_WREN_SHARE_TABLE			0xF0F00002
+#define VM_WREN_SHARE_LSOBJ			0xF0F00003
 #define VM_WREN_SHARE_TABLE_ENTRY	0xF0F00004
 
 typedef struct _vmWrenReference {
 	int type;
 	int refCount;
 	WrenHandle* handle;
+	carricaVM *cvm;
 } vmWrenReference;
 
 typedef struct _vmWrenReReference {
 	int type;
-	carricaVM *vm;
+	carricaVM *cvm;
 	vmWrenReference *pref;
 } vmWrenReReference;
 

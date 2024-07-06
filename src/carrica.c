@@ -34,10 +34,12 @@ int lctGC(lua_State* L) {
 	vmWrenReference *ref = luaL_checkudata(L, 1, LUA_NAME_STABLE);
 	ref->refCount--;
 	if (ref->refCount == 0) {
+		// remove the underlying table
 		lua_pushlightuserdata(L, ref);
 		lua_pushnil(L);
 		lua_settable(L, LUA_REGISTRYINDEX);
-		//free(ref);
+		// release the wren handle
+		wrenReleaseHandle(ref->cvm->vm, ref->handle);
 	}
 	return 0;
 }
@@ -82,10 +84,12 @@ int lcaGC(lua_State* L) {
 	vmWrenReference *ref = luaL_checkudata(L, 1, LUA_NAME_SARRAY);
 	ref->refCount--;
 	if (ref->refCount == 0) {
+		// remove the underlying table
 		lua_pushlightuserdata(L, ref);
 		lua_pushnil(L);
 		lua_settable(L, LUA_REGISTRYINDEX);
-		//free(ref);
+		// release the wren handle
+		wrenReleaseHandle(ref->cvm->vm, ref->handle);
 	}
 	return 0;
 }
@@ -326,7 +330,7 @@ int lcvmNewArray(lua_State* L) {
 	vmWrenReReference *reref = wrenSetSlotNewForeign(cvm->vm, 0, 1, VM_REREF_SIZE);
 	reref->type = VM_WREN_SHARE_ARRAY;
 	reref->pref = ref;
-	reref->vm = cvm;
+	reref->cvm = cvm;
 	ref->refCount = 1;
 	ref->handle = wrenGetSlotHandle(cvm->vm, 0);
 	// all good, return the userdata
@@ -351,7 +355,7 @@ int lcvmNewTable(lua_State* L) {
 	vmWrenReReference *reref = wrenSetSlotNewForeign(cvm->vm, 0, 1, VM_REREF_SIZE);
 	reref->type = VM_WREN_SHARE_TABLE;
 	reref->pref = ref;
-	reref->vm = cvm;
+	reref->cvm = cvm;
 	ref->handle = wrenGetSlotHandle(cvm->vm, 0);
 	// all good, return the userdata
 	return 1;

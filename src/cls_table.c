@@ -19,6 +19,7 @@ vmWrenReference* tvmLuaNewTable(carricaVM *cvm) {
 	vmWrenReference* ret = lua_newuserdata(L, VM_REF_SIZE);
 	ret->type = VM_WREN_SHARE_TABLE;
 	ret->refCount = 1;
+	ret->cvm = cvm;
 	lua_pushlightuserdata(L, ret);
 	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
@@ -177,24 +178,14 @@ void tvmAllocate(WrenVM* vm) {
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 0, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_TABLE;
 	ref->pref = tvmLuaNewTable(wrenGetUserData(vm));
-	ref->vm = wrenGetUserData(vm);
+	ref->cvm = wrenGetUserData(vm);
 }
 
 // remove a table
 void tvmFinalize(void *obj) {
 	vmWrenReReference* ref = obj;
-	ref->pref->refCount--;
-	// last to hold the object? clean it up
-	if (ref->pref->refCount == 0) {
-		// remove the stored reference to this user data
-		lua_pushlightuserdata(ref->vm->L, &ref->pref->refCount);
-		lua_pushnil(ref->vm->L);
-		lua_settable(ref->vm->L, LUA_REGISTRYINDEX);
-		// remove the stored reference to the underlying table
-		lua_pushlightuserdata(ref->vm->L, ref->pref);
-		lua_pushnil(ref->vm->L);
-		lua_settable(ref->vm->L, LUA_REGISTRYINDEX);
-	}
+	if (ref->pref->refCount > 0) ref->pref->refCount--;
+	// let lua handle cleanup in garbage collection
 }
 
 void tvmHold(WrenVM *vm) {
@@ -360,7 +351,7 @@ void tvmIteratorValue(WrenVM *vm) {
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 1, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_TABLE_ENTRY;
 	ref->pref = NULL;
-	ref->vm = cvm;
+	ref->cvm = cvm;
 	lua_pushlightuserdata(cvm->L, &ref->pref);
 	lua_pushvalue(cvm->L, -2);
 	lua_settable(cvm->L, LUA_REGISTRYINDEX);
@@ -376,14 +367,14 @@ void tevmAllocate(WrenVM* vm) {
 	vmWrenReReference* ref = wrenSetSlotNewForeign(vm, 0, 0, VM_REREF_SIZE);
 	ref->type = VM_WREN_SHARE_TABLE_ENTRY;
 	ref->pref = NULL;
-	ref->vm = wrenGetUserData(vm);
+	ref->cvm = wrenGetUserData(vm);
 }
 
 // remove a table
 void tevmFinalize(void *obj) {
 	vmWrenReReference* ref = obj;
 	// remove the stored lua objects
-	lua_State *L = ref->vm->L;
+	lua_State *L = ref->cvm->L;
 	lua_pushlightuserdata(L, &ref->type);
 	lua_pushnil(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
