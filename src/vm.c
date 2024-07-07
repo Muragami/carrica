@@ -541,13 +541,15 @@ WrenLoadModuleResult vmLoadModule(WrenVM* vm, const char* name) {
 	snprintf(ebuffer, 256, "\033[36m--   load: module = %s\033[0m", name);
 	EMIT("%s\n", ebuffer);
 #endif
+	// search the internal table first, see if we have it
 	for (int i = 0; i < mod->count; i++) {
 		if (mod->mod[i].def.name && !strcmp(name, mod->mod[i].def.name)) {
 			// found the module, return it
 			result.source = mod->mod[i].def.source;
-			break;
+			return result;
 		}
 	}
+	// if not found, call our routine we have to find it
 	if ((result.source == NULL) && (cvm->refs.loadModule != NULL)) {
 		lua_pushlightuserdata(cvm->L, cvm->refs.loadModule);
 		lua_gettable(cvm->L, LUA_REGISTRYINDEX);
@@ -564,8 +566,11 @@ WrenLoadModuleResult vmLoadModule(WrenVM* vm, const char* name) {
 			mem[len] = 0;
 			result.source = mem;
 			result.onComplete = loadModuleComplete;
+			lua_pop(cvm->L, 1);	// pop the string left on the stack
+			return result;
 		}
 	}
+	luaL_error(cvm->L, "carrica -> could not find module '%s' to load", name);
 	return result;
 }
 
