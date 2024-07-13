@@ -187,6 +187,8 @@ void vmNew(lua_State* L, carricaVM *vm, const char *name);
 void vmRelease(carricaVM* vm);
 // is this a valid VM instance?
 bool vmIsValid(carricaVM* vm);
+// set a name to report to Wren moduls
+void vmSetWrenName(carricaVM *vm, const char *name);
 // does the VM hold a certain top level variable?
 bool vmHasVariable(carricaVM* vm, const char* module, const char* name);
 // does the VM have a certain module loaded?

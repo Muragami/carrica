@@ -12,10 +12,17 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+typedef struct _sharedModule {
+	const char *name;
+	const char *source;
+	UT_hash_handle hh;
+} sharedModule;
+
 static lua_State *mstate;
 static int mEmitRef = -1;
 static int mSortRef = -1;
 static char emitBuffer[256];
+static sharedModule *smodEntry = NULL;
 
 // this clobbers slot 0 in wren, FWIW
 // since Wren isn't reentrant, not an issue at the moment
@@ -363,6 +370,13 @@ int lcvmNewTable(lua_State* L) {
 	return 1;
 }
 
+int lcvmSetWrenName(lua_State* L) {
+	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
+	if (!vmIsValid(cvm)) luaL_error(L, "carrica -> %s called on an invalid VM instance", ".setWrenName()");
+	vmSetWrenName(cvm, luaL_checkstring(L, 2));
+	return 0;
+}
+
 // NYI
 int lcvmGetClass(lua_State* L) {
 	carricaVM *cvm = luaL_checkudata(L, 1, LUA_NAME_WRENVM);
@@ -386,6 +400,7 @@ luaL_Reg lcvmfunc[] = {
 	{ "renew", lcvmRenew },						// re-initialize this VM, only if released earlier
 	// now for low level cantrips and such
 	{ "setLoadFunction", lcvmSetLoadFunction },	// set a function that gets called when a module needs loaded
+	{ "setWrenName", lcvmSetWrenName },			// set a function that gets called when a module needs loaded
 	{ "handler", lcvmHandler },					// set handlers for this VM
 	{ "interpret", lcvmInterpret },				// interpret code in the VM
 	{ "getMethod", lcvmGetMethod },				// get a method as a lua function
@@ -416,6 +431,12 @@ int lcNewVM(lua_State* L) {
 	lua_pop(L, 1);	// remove our registry table, so we can return the new VM
 	luaL_getmetatable (L, LUA_NAME_WRENVM);
 	lua_setmetatable(L, -2);
+	// see if we have a default name to set for Wren
+	lua_pushlightuserdata(L, &smodEntry);
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	if (lua_type(L, -1) == LUA_TSTRING) vmSetWrenName(vm, lua_tostring(L, -1));
+	// pop the string or nil value
+	lua_pop(L, 1);
 	return 1;
 }
 
@@ -457,14 +478,6 @@ int lcSetDebugEmit(lua_State *L) {
 	return 0;
 }
 
-typedef struct _sharedModule {
-	const char *name;
-	const char *source;
-	UT_hash_handle hh;
-} sharedModule;
-
-sharedModule *smodEntry = NULL;
-
 int lcInstallModule(lua_State *L) {
 	const char *name = strdup(luaL_checkstring(L, 1));
 	const char *source = strdup(luaL_checkstring(L, 2));
@@ -486,18 +499,30 @@ int lcSetSortFunc(lua_State *L) {
 		lua_pushvalue(L, -2);
 		lua_settable(L, LUA_REGISTRYINDEX);
 	} else {
-		luaL_error(L, "carrica -> .setSortFunc() called with a non-function parameter");
+		luaL_error(L, "carrica -> .setSortFunc() passed a non-function parameter");
 	}
 	return 0;
 }
 
+int lcSetDefaultWrenName(lua_State *L) {
+	lua_pushlightuserdata(L, &smodEntry);
+	if (lua_type(L, 1) == LUA_TSTRING) {
+		lua_pushvalue(L, 1);
+		lua_settable(L, LUA_REGISTRYINDEX);
+	} else 
+		luaL_error(L, "carrica -> .setDefaultWrenName() passed a non-string parameter");
+	return 0;
+}
+
 luaL_Reg lfunc[] = {
-	{ "newVM", lcNewVM },						// create a new VM
-	{ "version", lcVersion },					// version of carrica
 	{ "hasDebug", lcHasDebug },					// compiled with debug?
-	{ "setDebugEmit", lcSetDebugEmit },			// set a function to accept debug emits
 	{ "installModule", lcInstallModule },		// install a shared source module for all VMs
+	{ "newVM", lcNewVM },						// create a new VM
+	{ "setDebugEmit", lcSetDebugEmit },			// set a function to accept debug emit
 	{ "setSortFunc", lcSetSortFunc },			// set the default sort function for arrays
+	{ "setDefaultWrenName", lcSetDefaultWrenName },	
+												// set the default sort function for arrays
+	{ "version", lcVersion },					// version of carrica
     { NULL, NULL }
 };
 

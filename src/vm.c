@@ -774,6 +774,12 @@ void vmRelease(carricaVM *cvm) {
 	}
 }
 
+void vmSetWrenName(carricaVM *cvm, const char *name) {
+	if (!vmIsValid(cvm)) return;
+	if (cvm->wrenName) free(cvm->wrenName);
+	cvm->wrenName = strdup(name);
+}
+
 bool vmHasVariable(carricaVM *cvm, const char *module, const char *name) {
 	if (!vmIsValid(cvm)) return false;
 	return wrenHasVariable(cvm->vm, module, name);
