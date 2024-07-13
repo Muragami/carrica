@@ -78,6 +78,10 @@ foreign class Table {
 
 // this allows you to make calls on the host via 'handlers' installed
 class Host {
+	// return the name string that identifies this host
+	foreign static name
+	// get a constant value from it's name
+	foreign static const(name)
 	// get a reference to a handler from it's name
 	foreign static ref(name)
 	// make a call via a handler reference
@@ -90,7 +94,7 @@ class Host {
 	foreign static call(ref, a, b, c, d, e, f)
 	foreign static call(ref, a, b, c, d, e, f, g)
 	foreign static call(ref, a, b, c, d, e, f, g, h)
-
+	// return our current version (not the host, the carrica module itself)
 	static version { "0.1.0 Tenma" }
 }
 

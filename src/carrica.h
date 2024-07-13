@@ -13,6 +13,7 @@
 // development names: [Tenma] Michiru Uruka Iori Ashella Nasa Pippa
 // release names: Lumi Dokuro Shiina Panko Isami Muyu Sakana
 #define CARRICA_VERSION		"0.1.0 Tenma"
+#define CARRICA_NAME		"carrica 0.1.0 Tenma"
 
 #define LUA_NAME_WRENVM		"1-CARRCIA-WRENVM"
 #define LUA_NAME_STABLE		"2-CARRCIA-STABLE"

@@ -15,7 +15,40 @@
 // ********************************************************************************
 // functions
 
-void hvmHostRef(WrenVM* vm) {
+void hvmName(WrenVM* vm) {
+	carricaVM *cvm = wrenGetUserData(vm);
+	if (!vmIsValid(cvm)) 
+		WERR("Host.name called on an invalid VM instance")
+	if (cvm->wrenName) {
+		wrenSetSlotString(vm, 0, cvm->wrenName);
+	} else {
+		wrenSetSlotString(vm, 0, CARRICA_NAME);
+	}
+}
+
+void hvmConst(WrenVM* vm) {
+	carricaVM *cvm = wrenGetUserData(vm);
+	if (!vmIsValid(cvm)) 
+		WERR("Host.const() called on an invalid VM instance")
+	if (wrenGetSlotType(vm, 1) != WREN_TYPE_STRING) 
+		WERR("Host.const() called with bad parameter, string expected")
+	const char *name = wrenGetSlotString(vm, 1);
+	lua_pushlightuserdata(cvm->L, cvm->name);
+	lua_gettable(cvm->L, LUA_REGISTRYINDEX);
+	lua_getfield(cvm->L, -1, name);
+	if (lua_type(cvm->L, -1) != LUA_TNIL) {
+		// get a ref to this for later
+		lua_pushstring(cvm->L, name);
+		int r = luaL_ref(cvm->L, -3);
+		wrenSetSlotDouble(vm, 0, (double)r);
+		lua_pop(cvm->L, 1);
+	} else {
+		wrenSetSlotDouble(vm, 0, -1);
+		lua_pop(cvm->L, 2);
+	}
+}
+
+void hvmRef(WrenVM* vm) {
 	carricaVM *cvm = wrenGetUserData(vm);
 	if (!vmIsValid(cvm)) 
 		WERR("Host.ref() called on an invalid VM instance")
@@ -27,10 +60,12 @@ void hvmHostRef(WrenVM* vm) {
 	lua_getfield(cvm->L, -1, name);
 	if (lua_type(cvm->L, -1) == LUA_TFUNCTION) {
 		// get a ref to this for later
-		int r = luaL_ref (cvm->L, -2);
+		int r = luaL_ref(cvm->L, -2);
 		wrenSetSlotDouble(vm, 0, (double)r);
+		lua_pop(cvm->L, 1);
 	} else {
 		wrenSetSlotDouble(vm, 0, -1);
+		lua_pop(cvm->L, 2);
 	}
 }
 
@@ -50,7 +85,7 @@ void hvmCall0(WrenVM* vm) {
 		lua_call(cvm->L, 0, 1);
 		// marshal the return into a wren form
 		wrenSetSlotFromLua(cvm, 0, -1);
-		lua_pop(cvm->L, 1);
+		lua_pop(cvm->L, 2);
 	} else {
 		lua_pop(cvm->L, 2);
 		WERR("Host.call() failed, no handler could be found")
@@ -74,7 +109,7 @@ void hvmCall1(WrenVM* vm) {
 		lua_call(cvm->L, 1, 1);
 		// marshal the return into a wren form
 		wrenSetSlotFromLua(cvm, 0, -1);
-		lua_pop(cvm->L, 1);
+		lua_pop(cvm->L, 2);
 	} else {
 		lua_pop(cvm->L, 2);
 		WERR("Host.call() failed, no handler could be found")
@@ -96,10 +131,10 @@ void hvmCall2(WrenVM* vm) {
 	if (lua_type(cvm->L, -1) == LUA_TFUNCTION) {
 		luaPushFromWrenSlot(cvm, 2);
 		luaPushFromWrenSlot(cvm, 3);
-		lua_call(cvm->L, 1, 1);
+		lua_call(cvm->L, 2, 1);
 		// marshal the return into a wren form
 		wrenSetSlotFromLua(cvm, 0, -1);
-		lua_pop(cvm->L, 1);
+		lua_pop(cvm->L, 2);
 	} else {
 		lua_pop(cvm->L, 2);
 		WERR("Host.call() failed, no handler could be found")
@@ -122,10 +157,10 @@ void hvmCall3(WrenVM* vm) {
 		luaPushFromWrenSlot(cvm, 2);
 		luaPushFromWrenSlot(cvm, 3);
 		luaPushFromWrenSlot(cvm, 4);
-		lua_call(cvm->L, 1, 1);
+		lua_call(cvm->L, 3, 1);
 		// marshal the return into a wren form
 		wrenSetSlotFromLua(cvm, 0, -1);
-		lua_pop(cvm->L, 1);
+		lua_pop(cvm->L, 2);
 	} else {
 		lua_pop(cvm->L, 2);
 		WERR("Host.call() failed, no handler could be found")
@@ -149,10 +184,10 @@ void hvmCall4(WrenVM* vm) {
 		luaPushFromWrenSlot(cvm, 3);
 		luaPushFromWrenSlot(cvm, 4);
 		luaPushFromWrenSlot(cvm, 5);
-		lua_call(cvm->L, 1, 1);
+		lua_call(cvm->L, 4, 1);
 		// marshal the return into a wren form
 		wrenSetSlotFromLua(cvm, 0, -1);
-		lua_pop(cvm->L, 1);
+		lua_pop(cvm->L, 2);
 	} else {
 		lua_pop(cvm->L, 2);
 		WERR("Host.call() failed, no handler could be found")
@@ -177,10 +212,10 @@ void hvmCall5(WrenVM* vm) {
 		luaPushFromWrenSlot(cvm, 4);
 		luaPushFromWrenSlot(cvm, 5);
 		luaPushFromWrenSlot(cvm, 6);
-		lua_call(cvm->L, 1, 1);
+		lua_call(cvm->L, 5, 1);
 		// marshal the return into a wren form
 		wrenSetSlotFromLua(cvm, 0, -1);
-		lua_pop(cvm->L, 1);
+		lua_pop(cvm->L, 2);
 	} else {
 		lua_pop(cvm->L, 2);
 		WERR("Host.call() failed, no handler could be found")
@@ -206,10 +241,10 @@ void hvmCall6(WrenVM* vm) {
 		luaPushFromWrenSlot(cvm, 5);
 		luaPushFromWrenSlot(cvm, 6);
 		luaPushFromWrenSlot(cvm, 7);
-		lua_call(cvm->L, 1, 1);
+		lua_call(cvm->L, 6, 1);
 		// marshal the return into a wren form
 		wrenSetSlotFromLua(cvm, 0, -1);
-		lua_pop(cvm->L, 1);
+		lua_pop(cvm->L, 2);
 	} else {
 		lua_pop(cvm->L, 2);
 		WERR("Host.call() failed, no handler could be found")
@@ -236,10 +271,10 @@ void hvmCall7(WrenVM* vm) {
 		luaPushFromWrenSlot(cvm, 6);
 		luaPushFromWrenSlot(cvm, 7);
 		luaPushFromWrenSlot(cvm, 8);
-		lua_call(cvm->L, 1, 1);
+		lua_call(cvm->L, 7, 1);
 		// marshal the return into a wren form
 		wrenSetSlotFromLua(cvm, 0, -1);
-		lua_pop(cvm->L, 1);
+		lua_pop(cvm->L, 2);
 	} else {
 		lua_pop(cvm->L, 2);
 		WERR("Host.call() failed, no handler could be found")
@@ -267,10 +302,10 @@ void hvmCall8(WrenVM* vm) {
 		luaPushFromWrenSlot(cvm, 7);
 		luaPushFromWrenSlot(cvm, 8);
 		luaPushFromWrenSlot(cvm, 9);
-		lua_call(cvm->L, 1, 1);
+		lua_call(cvm->L, 8, 1);
 		// marshal the return into a wren form
 		wrenSetSlotFromLua(cvm, 0, -1);
-		lua_pop(cvm->L, 1);
+		lua_pop(cvm->L, 2);
 	} else {
 		lua_pop(cvm->L, 2);
 		WERR("Host.call() failed, no handler could be found")
@@ -281,7 +316,9 @@ void hvmCall8(WrenVM* vm) {
 // wrap it all up for Wren
 
 const vmForeignMethodDef _h_func[] = {
-	{ true, "ref(_)", hvmHostRef },
+	{ true, "name", hvmName },
+	{ true, "const(_)", hvmConst },
+	{ true, "ref(_)", hvmRef },
 	{ true, "call(_)", hvmCall0 },
 	{ true, "call(_,_)", hvmCall1 },
 	{ true, "call(_,_,_)", hvmCall2 },

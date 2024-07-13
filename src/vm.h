@@ -80,6 +80,7 @@ typedef struct _carricaVM {
 	carricaModTable modtable;
 	int id;
 	char* name;
+	char* wrenName;
 #ifdef CARRICA_USE_THREADS
 	pthread_mutex_t lock;
 #endif

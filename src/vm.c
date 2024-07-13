@@ -714,9 +714,13 @@ void vmNew(lua_State *L, carricaVM *cvm, const char *name) {
 	// create the vm
 	cvm->L = L;
 	cvm->vm = wrenNewVM(conf);
-	// we are going to need a registry table for this VM in lua
+	// we are going to need a function registry table for this VM in lua
 		lua_pushlightuserdata(L, cvm); 	// key
 		lua_newtable(L);				// table
+	lua_settable(L, LUA_REGISTRYINDEX);
+	// we are going to need a const registry table for this VM in lua
+		lua_pushlightuserdata(L, cvm->name); 	// key
+		lua_newtable(L);						// table
 	lua_settable(L, LUA_REGISTRYINDEX);
 #ifdef CARRICA_USE_THREADS
 #ifdef VM_DEBUG
