@@ -91,7 +91,7 @@ else
   $(error "invalid configuration $(config)")
 endif
 
-CC = clang
+CC = gcc
 
 # Per File Configurations
 # #############################################
