@@ -57,7 +57,7 @@ WLDFLAGS = ./lib/libwren.ucrt.a -lluajit-5.1 -lm -ldl
 LBUILD_DIR := ./lobj
 LOBJS := $(SRCS:%=$(LBUILD_DIR)/%.o)
 LCPPFLAGS ?= $(INC_FLAGS) -fPIC -std=gnu11 -Wall -m64 -O2
-LLDFLAGS = ./lib/libwren.a -llusjit-5.1 -lpthread -lm -ldl
+LLDFLAGS = ./lib/libwren.a -lluajit-5.1 -lpthread -lm -ldl
 
 #macos cfg
 MBUILD_DIR := ./mobj
