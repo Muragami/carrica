@@ -1,2 +1,2 @@
-cp ../lobj/carrica.l.so ./
+cp ../lobj/carrica.l.so ./carrica.so
 luajit -joff tests.lua
