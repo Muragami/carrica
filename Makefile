@@ -15,19 +15,24 @@ $(info -----)
 ifeq ($(SYS_OS),Windows)
 .DEFAULT_GOAL := win
 CLEAN_DIR := ./wobj
+#build with clang
+CC := clang
+CXX := clang++
 endif
 ifeq ($(SYS_OS),Linux)
 .DEFAULT_GOAL := linux
 CLEAN_DIR := ./lobj
+#build with gcc
+CC := gcc
+CXX := g++
 endif
 ifeq ($(SYS_OS),Darwin)
 .DEFAULT_GOAL := mac
 CLEAN_DIR := ./mobj
-endif
-
 #build with clang
 CC := clang
 CXX := clang++
+endif
 
 #universal cfg
 SRC_DIRS := ./src
