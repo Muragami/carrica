@@ -63,7 +63,7 @@ LLDFLAGS = ./lib/libwren.a -lluajit-5.1 -lpthread -lm -ldl
 MBUILD_DIR := ./mobj
 MOBJS := $(SRCS:%=$(MBUILD_DIR)/%.o)
 MCPPFLAGS ?= $(INC_FLAGS) -fPIC -std=gnu11 -Wall -m64 -O2
-MLDFLAGS = ./lib/libwren.m.a -lpthread -lm -ldl
+MLDFLAGS = ./lib/libwren.a -lluajit-5.1 -lpthread -lm -ldl
 
 # text source
 $(SRC_DIRS)/%.wren.txt: %.wren
