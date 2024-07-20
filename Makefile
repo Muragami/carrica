@@ -62,7 +62,7 @@ LLDFLAGS = ./lib/libwren.a -lluajit-5.1 -lpthread -lm -ldl
 #macos cfg
 MBUILD_DIR := ./mobj
 MOBJS := $(SRCS:%=$(MBUILD_DIR)/%.o)
-MCPPFLAGS ?= $(INC_FLAGS) -fPIC -std=gnu11 -Wall -m64 -O2
+MCPPFLAGS ?= $(INC_FLAGS) -arch x86_64 -arch arm64 -fPIC -std=gnu11 -Wall -O2
 MLDFLAGS = ./lib/libwren.a -lluajit-5.1 -lpthread -lm -ldl
 
 # text source
